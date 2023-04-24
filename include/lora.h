@@ -1,5 +1,5 @@
-#ifndef _LORA_H
-#define _LORA_H
+#ifndef LORA_H
+#define LORA_H
 
 #include <Arduino.h>
 #include <Wire.h>
@@ -10,11 +10,6 @@
 
 namespace lora
 {
-    /**
-     * @defgroup    LoRa_Typedefs
-     * @brief       Typedefs
-     */
-
     /**
      * @brief   Behaviour of the board enumeration
      */
@@ -34,11 +29,6 @@ namespace lora
     } ReceivedData_t;
 
     /**
-     * @defgroup    LoRa_Functions
-     * @brief       Functions
-     */
-
-    /**
      * @brief   Initialize LoRa shield
      * @param   boardType: Board type, values from @ref BoardType_t
      * @note    Performs BME280 sensor init if board is specified as SLAVE
@@ -48,7 +38,6 @@ namespace lora
 
     /**
      * @brief   Sends data request
-     * @param   None
      * @note    MASTER boards only
      */
     void sendRequest(void);
@@ -68,4 +57,4 @@ namespace lora
     u8 readResponse(ReceivedData_t *data);
 }
 
-#endif /* _LORA_H */
+#endif /* LORA_H */
