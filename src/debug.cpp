@@ -1,7 +1,7 @@
 #include "debug.h"
 
-void debug::printDebug(debug::MsgType_t type, const char *msg)
+void debug::printDebug(debug::MsgType_t type, String msg)
 {
     String msgPrefix = type ? "[ERR]" : "[INFO]";
-    Serial.println(msgPrefix + String(msg));
+    Serial.println(msgPrefix + msg);
 }
