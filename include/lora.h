@@ -8,6 +8,9 @@
 #include "globals.h"
 #include "bme280_sensor.h"
 
+#define UART1_RX PA10
+#define UART1_TX PA9
+
 namespace lora
 {
     /**
@@ -31,10 +34,11 @@ namespace lora
     /**
      * @brief   Initialize LoRa shield
      * @param   boardType: Board type, values from @ref BoardType_t
+     * @param   setupSensor: Whether to setup the sensor (boolean)
      * @note    Performs BME280 sensor init if board is specified as SLAVE
      *          and setup flag is `true`
      */
-    void shieldInit(BoardType_t boardType, boolean setupSensor);
+    void shieldInit(BoardType_t boardType, bool setupSensor);
 
     /**
      * @brief   Sends data request
