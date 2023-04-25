@@ -6,7 +6,7 @@
 #include <LoRaRadio.h>
 
 #include "globals.h"
-#include "bme280_sensor.h"
+#include "bme280.h"
 
 #define UART1_RX PA10
 #define UART1_TX PA9
