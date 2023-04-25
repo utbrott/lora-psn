@@ -1,14 +1,14 @@
 #ifndef BME280_SENSOR_H
 #define BME280_SENSOR_H
 
-#include <Arduino.h>
-#include <Wire.h>
-#include <SPI.h>
-#include <Adafruit_Sensor.h>
 #include <Adafruit_BME280.h>
+#include <Adafruit_Sensor.h>
+#include <Arduino.h>
+#include <SPI.h>
+#include <Wire.h>
 
-#include "globals.h"
 #include "debug.h"
+#include "globals.h"
 
 #define SDA_PIN PB7
 #define SCL_PIN PB6
@@ -35,7 +35,7 @@ namespace bme280
      * @brief Reads data from the sensor
      * @param *data: data from the sensor
      */
-    void readData(SensorData_t *data);
+    SensorData_t readData(void);
 }
 
 #endif /* BME280_SENSOR_H */

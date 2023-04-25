@@ -59,18 +59,17 @@ namespace lora
     }
 
     // Only for MASTER module
-    u8 readResponse(lora::ReceivedData_t *data)
+    void readResponse(u8 message[])
     {
-        u8 message[8]; // Payload
-
+        ReceivedData_t data;
         // Merge each 2x 8-bit fields into 1x 16-bit one, fix magnitudes
-        data->temperature = (f32)(message[0] << 8 + message[1]) / 100;
-        data->pressure = (f32)(message[2] << 8 + message[3]);
+        data.temperature = (f32)(message[0] << 8 + message[1]) / 100;
+        data.pressure = (f32)(message[2] << 8 + message[3]);
 
         memset(message, 0, 8);
 
-        String temperatureMsg = "Temperature:" + String(data->temperature) + "\u00b0C";
-        String pressureMsg = "Pressure:" + String(data->pressure) + "hPa";
+        String temperatureMsg = "Temperature:" + String(data.temperature) + "\u00b0C";
+        String pressureMsg = "Pressure:" + String(data.pressure) + "hPa";
 
         String formattedMessage[3] = {
             "Response received",
@@ -82,7 +81,5 @@ namespace lora
         {
             debug::printDebug(debug::INFO, formattedMessage[i]);
         }
-
-        return 0;
     }
 }

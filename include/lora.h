@@ -55,10 +55,9 @@ namespace lora
 
     /**
      * @brief   Read response from LoRa connection
-     * @param   *data: data received through LoRa
-     * @retval  Received data array
+     * @param   message: Message received through LoRa
      */
-    u8 readResponse(ReceivedData_t *data);
+    void readResponse(u8 message[]);
 }
 
 #endif /* LORA_H */

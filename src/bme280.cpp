@@ -14,8 +14,8 @@ namespace bme280
 
         if (!sensor.begin(SENSOR_ADDR))
         {
-            debug::printDebug(debug::ERR, "BME280 not found! Connect it and restart board.");
-            while (1)
+            debug::printDebug(debug::ERR, "BME280 not found, program halted!");
+            while (true)
             {
                 // Infinite loop, do not continue if no sensor found
             }
@@ -24,10 +24,14 @@ namespace bme280
         debug::printDebug(debug::INFO, "BME280 sensor connected.");
     }
 
-    void readData(bme280::SensorData_t *data)
+    SensorData_t readData(void)
     {
+        SensorData_t data;
+
         // Change the magnitue for easier sending
-        data->temperature = (sensor.readTemperature() * 100);
-        data->pressure = (sensor.readPressure() / 100.00f);
+        data.temperature = (sensor.readTemperature() * 100);
+        data.pressure = (sensor.readPressure() / 100.00f);
+
+        return data;
     }
 }
