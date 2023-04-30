@@ -7,7 +7,7 @@
  * @note `lora::SLAVE` mode - reading data from sensor, responding
  * to requests
  */
-#define BOARD_TYPE lora::SLAVE
+#define BOARD_TYPE lora::MASTER
 
 /**
  * @brief Whether to initialize the BME280 sensor along the LoRa module
@@ -17,20 +17,17 @@
  */
 #define HAS_SENSOR true
 
-lora::BoardType_t boardType = BOARD_TYPE;
+bme280::SensorData_t sensorData = {0, 0};
+lora::ReceivedData_t receivedData = {0.0, 0.0};
 u8 requestMessage[1];
 u8 receivedMessage[8];
+u8 interruptState = 0;
 
 void setup()
 {
-    // Init Serial, used for debug messages
     Serial.begin(115200);
-
-    // Init the LoRa shield
-    lora::shieldInit(boardType, HAS_SENSOR);
-
-    // Attach button interrupt if board is MASTER
-    if (boardType == lora::MASTER)
+    lora::shieldInit(BOARD_TYPE, HAS_SENSOR);
+    if (BOARD_TYPE == lora::MASTER)
     {
         attachInterrupt(digitalPinToInterrupt(BOARD_BTN), buttonClickInterrupt,
                         RISING);
@@ -39,17 +36,23 @@ void setup()
 
 void loop()
 {
-    switch (boardType)
+    switch (BOARD_TYPE)
     {
     case lora::SLAVE:
-        if (loraRadio.read(requestMessage) == 0x04)
+        if (loraRadio.read(requestMessage))
         {
-            memset(requestMessage, 0, 1);
-            debug::printDebug(debug::INFO, "Data request received");
+            Serial.println(String(requestMessage[0]));
+            if (requestMessage[0] == 0xFF)
+            {
+                memset(requestMessage, 0, 1);
+                debug::printDebug(debug::INFO, "Data request received");
 
-            lora::sendResponse(&bme280::readData());
+                bme280::readData(&sensorData);
+                lora::sendResponse(&sensorData);
+            }
         }
         break;
+
     case lora::MASTER:
         if (interruptState)
         {
@@ -59,7 +62,7 @@ void loop()
 
         if (loraRadio.read(receivedMessage) > 0)
         {
-            lora::readResponse(receivedMessage);
+            lora::readResponse(&receivedData, receivedMessage);
         }
         break;
     }

@@ -1,8 +1,5 @@
 # To implement
 
-- LoRa connection
-- Main loop
-
 # Look into
 
 - Use sleep to limit power usage

@@ -35,7 +35,7 @@ namespace bme280
      * @brief Reads data from the sensor
      * @param *data: data from the sensor
      */
-    SensorData_t readData(void);
+    void readData(SensorData_t *sensorData);
 }
 
 #endif /* BME280_SENSOR_H */

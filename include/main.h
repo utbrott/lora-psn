@@ -14,9 +14,24 @@
 #define BOARD_LED PA5
 
 /**
- * @brief Defines how the board behaves
+ * @brief Data read by the BME280 sensor
  */
-extern lora::BoardType_t boardType;
+extern bme280::SensorData_t sensorData;
+
+/**
+ * @brief Data received from the LoRa message
+ */
+extern lora::ReceivedData_t receivedData;
+
+/**
+ * @brief Request message sent by MASTER module and received by SLAVE module
+ */
+extern u8 requestMessage[1];
+
+/**
+ * @brief Holds data that is received through LoRa message
+ */
+extern u8 receivedMessage[8];
 
 /**
  * @brief Flag to hold current button interrupt state value

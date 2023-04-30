@@ -24,14 +24,10 @@ namespace bme280
         debug::printDebug(debug::INFO, "BME280 sensor connected.");
     }
 
-    SensorData_t readData(void)
+    void readData(SensorData_t *data)
     {
-        SensorData_t data;
-
         // Change the magnitue for easier sending
-        data.temperature = (sensor.readTemperature() * 100);
-        data.pressure = (sensor.readPressure() / 100.00f);
-
-        return data;
+        data->temperature = (sensor.readTemperature() * 100);
+        data->pressure = (sensor.readPressure() / 100.00f);
     }
 }

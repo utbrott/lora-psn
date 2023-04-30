@@ -37,7 +37,7 @@ namespace lora
     void sendRequest(void)
     {
         u8 message[] = {0xFF};
-        debug::printDebug(debug::INFO, "Sending new requst...");
+        debug::printDebug(debug::INFO, "Sending new requst with value 0xFF...");
 
         loraRadio.write(message, 1);
     }
@@ -59,17 +59,15 @@ namespace lora
     }
 
     // Only for MASTER module
-    void readResponse(u8 message[])
+    void readResponse(ReceivedData_t *data, u8 message[])
     {
-        ReceivedData_t data;
         // Merge each 2x 8-bit fields into 1x 16-bit one, fix magnitudes
-        data.temperature = (f32)(message[0] << 8 + message[1]) / 100;
-        data.pressure = (f32)(message[2] << 8 + message[3]);
-
+        data->temperature = (f32)((message[0] << 8) + message[1]) / 100;
+        data->pressure = (f32)((message[2] << 8) + message[3]);
         memset(message, 0, 8);
 
-        String temperatureMsg = "Temperature:" + String(data.temperature) + "\u00b0C";
-        String pressureMsg = "Pressure:" + String(data.pressure) + "hPa";
+        String temperatureMsg = "Temperature: " + String(data->temperature) + "\u00b0C";
+        String pressureMsg = "Pressure: " + String(data->pressure) + "hPa";
 
         String formattedMessage[3] = {
             "Response received",
