@@ -10,6 +10,7 @@
 
 #define UART1_RX PA10
 #define UART1_TX PA9
+#define ARRAYSIZE(n) (sizeof(n) / sizeof(n[0]))
 
 namespace lora
 {
@@ -29,16 +30,15 @@ namespace lora
     {
         f32 temperature;
         f32 pressure;
+        f32 humidity;
     } ReceivedData_t;
 
     /**
      * @brief   Initialize LoRa shield
      * @param   boardType: Board type, values from @ref BoardType_t
-     * @param   setupSensor: Whether to setup the sensor (boolean)
-     * @note    Performs BME280 sensor init if board is specified as SLAVE
-     *          and setup flag is `true`
+     * @note    Also performs BME280 sensor init if board is specified as SLAVE
      */
-    void shieldInit(BoardType_t boardType, bool setupSensor);
+    void shieldInit(BoardType_t boardType);
 
     /**
      * @brief   Sends data request

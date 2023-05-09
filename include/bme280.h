@@ -18,12 +18,14 @@
 namespace bme280
 {
     /**
-     * @brief   Structure of data taken from the sensor
+     * @brief   Structure of data taken from the sensor. Temperature is a
+     * floating point, pressure a 32 bit integer, is in relative %.
      */
     typedef struct
     {
         u16 temperature;
         u16 pressure;
+        u16 humidity;
     } SensorData_t;
 
     /**

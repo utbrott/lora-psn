@@ -7,7 +7,7 @@ HardwareSerial SerialLora(UART1_RX, UART1_TX);
 namespace lora
 {
 
-    void shieldInit(lora::BoardType_t type, bool setupSensor)
+    void shieldInit(lora::BoardType_t type)
     {
         switch (type)
         {
@@ -28,7 +28,7 @@ namespace lora
 
         debug::printDebug(debug::INFO, "Shield ready!");
 
-        if (type == SLAVE && setupSensor)
+        if (type == SLAVE)
         {
             bme280::sensorInit();
         }
@@ -36,26 +36,29 @@ namespace lora
 
     void sendRequest(void)
     {
-        u8 message[] = {0xFF};
+        u8 message[] = {0xff};
         debug::printDebug(debug::INFO, "Sending new requst with value 0xFF...");
 
-        loraRadio.write(message, 1);
+        loraRadio.write(message, sizeof(message));
     }
 
     // Only for SLAVE modules
     void sendResponse(bme280::SensorData_t *data)
     {
-        u8 message[8]; // Payload
+        u8 message[6]; // Payload
 
         // Split each 16-bit field into 2x 8-bit with bit masking
-        message[0] = (data->temperature & 0xFF00) >> 8;
-        message[1] = (data->temperature & 0x00FF);
-        message[2] = (data->pressure & 0xFF00) >> 8;
-        message[3] = (data->pressure & 0x00FF);
+        message[0] = (data->temperature & 0xff00) >> 8;
+        message[1] = (data->temperature & 0x00ff);
+        message[2] = (data->pressure & 0xff00) >> 8;
+        message[3] = (data->pressure & 0x00ff);
+        message[4] = (data->humidity & 0xff00) >> 8;
+        message[5] = (data->humidity & 0x00ff);
 
         debug::printDebug(debug::INFO, "Sending response with payload...");
 
-        loraRadio.write(message, 8);
+        u8 dataSent = loraRadio.write(message, sizeof(message));
+        Serial.println(dataSent);
     }
 
     // Only for MASTER module
@@ -64,18 +67,21 @@ namespace lora
         // Merge each 2x 8-bit fields into 1x 16-bit one, fix magnitudes
         data->temperature = (f32)((message[0] << 8) + message[1]) / 100;
         data->pressure = (f32)((message[2] << 8) + message[3]);
+        data->humidity = (f32)((message[4] << 8) + message[5]) / 100;
         memset(message, 0, 8);
 
         String temperatureMsg = "Temperature: " + String(data->temperature) + "\u00b0C";
         String pressureMsg = "Pressure: " + String(data->pressure) + "hPa";
+        String humidityMsg = "Humidity: " + String(data->humidity) + "%";
 
-        String formattedMessage[3] = {
+        String formattedMessage[4] = {
             "Response received",
             temperatureMsg,
             pressureMsg,
+            humidityMsg,
         };
 
-        for (u8 i = 0; i < (sizeof(formattedMessage) / sizeof(formattedMessage[0])); ++i)
+        for (u8 i = 0; i < ARRAYSIZE(formattedMessage); ++i)
         {
             debug::printDebug(debug::INFO, formattedMessage[i]);
         }

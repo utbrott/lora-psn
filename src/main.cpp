@@ -7,26 +7,34 @@
  * @note `lora::SLAVE` mode - reading data from sensor, responding
  * to requests
  */
-#define BOARD_TYPE lora::MASTER
+#define BOARD_TYPE lora::SLAVE
 
 /**
- * @brief Whether to initialize the BME280 sensor along the LoRa module
- * (boolean).
- * @note If this is set to `true` and there is not sensor, program will panic
- * and get halted until sensor is connected and board restarted.
+ * @brief Local definition of SLAVE board ID, for network access
+ * @note Set a number value from 0x00 to 0xff to identify the board
  */
-#define HAS_SENSOR true
+#define SLAVE_ID 0x01
 
-bme280::SensorData_t sensorData = {0, 0};
-lora::ReceivedData_t receivedData = {0.0, 0.0};
+/**
+ * @brief How often (milliseconds) MASTER module should ask SLAVE modules for
+ * data updates
+ */
+#define REQUEST_PERDIOD_MS 60000
+
+bme280::SensorData_t sensorData = {0, 0, 0};
+lora::ReceivedData_t receivedData = {0.0, 0.0, 0.0};
 u8 requestMessage[1];
-u8 receivedMessage[8];
+u8 receivedMessage[64];
 u8 interruptState = 0;
+
+u8 requestCode[] = {0x01, 0x02}; // SLAVE IDs to ask for data
+bool nextRequest = true;         // Next request flag
+int requestTimer = 0;            // Request period timer
 
 void setup()
 {
     Serial.begin(115200);
-    lora::shieldInit(BOARD_TYPE, HAS_SENSOR);
+    lora::shieldInit(BOARD_TYPE);
     if (BOARD_TYPE == lora::MASTER)
     {
         attachInterrupt(digitalPinToInterrupt(BOARD_BTN), buttonClickInterrupt,
@@ -41,8 +49,8 @@ void loop()
     case lora::SLAVE:
         if (loraRadio.read(requestMessage))
         {
-            Serial.println(String(requestMessage[0]));
-            if (requestMessage[0] == 0xFF)
+            debug::printDebug(debug::INFO, "New request: 0x" + (String(requestMessage[0], HEX)));
+            if (memcmp(requestMessage, requestCode, 1) == 0)
             {
                 memset(requestMessage, 0, 1);
                 debug::printDebug(debug::INFO, "Data request received");
@@ -60,9 +68,19 @@ void loop()
             BOOL(interruptState);
         }
 
+        if (nextRequest)
+        {
+            BOOL(nextRequest);
+        }
+
         if (loraRadio.read(receivedMessage) > 0)
         {
             lora::readResponse(&receivedData, receivedMessage);
+        }
+
+        if ((millis() - requestTimer) >= REQUEST_PERDIOD_MS)
+        {
+            BOOL(nextRequest);
         }
         break;
     }

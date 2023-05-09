@@ -26,8 +26,9 @@ namespace bme280
 
     void readData(SensorData_t *data)
     {
-        // Change the magnitue for easier sending
-        data->temperature = (sensor.readTemperature() * 100);
-        data->pressure = (sensor.readPressure() / 100.00f);
+        // Change the magnitude for easier sending
+        data->temperature = (u16)(sensor.readTemperature() * 100.0f);
+        data->pressure = (u16)(sensor.readPressure() / 100.0f);
+        data->humidity = (u16)(sensor.readHumidity() * 100.0f);
     }
 }

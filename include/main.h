@@ -31,7 +31,7 @@ extern u8 requestMessage[1];
 /**
  * @brief Holds data that is received through LoRa message
  */
-extern u8 receivedMessage[8];
+extern u8 receivedMessage[64];
 
 /**
  * @brief Flag to hold current button interrupt state value
