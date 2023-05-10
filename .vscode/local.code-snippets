@@ -1,0 +1,9 @@
+{
+    "Serial log": {
+		"prefix": "log",
+		"body": [
+			"debug::printDebug(debug::${0:INFO}, \"$2\"",
+		],
+		"description": "Print Serial debug message"
+	}
+}
