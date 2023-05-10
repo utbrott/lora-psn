@@ -12,38 +12,33 @@ namespace lora
         switch (type)
         {
         case SLAVE:
-            debug::printDebug(debug::INFO, "SLAVE module");
+            debug::println(debug::INFO, "SLAVE module");
             break;
 
         case MASTER:
-            debug::printDebug(debug::INFO, "MASTER module");
+            debug::println(debug::INFO, "MASTER module");
             break;
         }
 
         while (!loraRadio.begin(&SerialLora))
         {
-            debug::printDebug(debug::INFO, "Shield not ready...");
+            debug::println(debug::INFO, "Shield not ready...");
             delay(1000); // Give the module 1s to init
         }
 
-        debug::printDebug(debug::INFO, "Shield ready!");
-
-        if (type == SLAVE)
-        {
-            bme280::sensorInit();
-        }
+        debug::println(debug::INFO, "Shield ready!");
     }
 
     void sendRequest(void)
     {
         u8 message[] = {0xff};
-        debug::printDebug(debug::INFO, "Sending new requst with value 0xFF...");
+        debug::println(debug::INFO, "Sending new requst with value 0xFF...");
 
         loraRadio.write(message, sizeof(message));
     }
 
     // Only for SLAVE modules
-    void sendResponse(bme280::SensorData_t *data)
+    void sendResponse(sensor::BufferData_t *data)
     {
         u8 message[6]; // Payload
 
@@ -55,7 +50,7 @@ namespace lora
         message[4] = (data->humidity & 0xff00) >> 8;
         message[5] = (data->humidity & 0x00ff);
 
-        debug::printDebug(debug::INFO, "Sending response with payload...");
+        debug::println(debug::INFO, "Sending response with payload...");
 
         u8 dataSent = loraRadio.write(message, sizeof(message));
         Serial.println(dataSent);
@@ -83,7 +78,7 @@ namespace lora
 
         for (u8 i = 0; i < ARRAYSIZE(formattedMessage); ++i)
         {
-            debug::printDebug(debug::INFO, formattedMessage[i]);
+            debug::println(debug::INFO, formattedMessage[i]);
         }
     }
 }

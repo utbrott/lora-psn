@@ -21,7 +21,9 @@
  */
 #define REQUEST_PERDIOD_MS 60000
 
-bme280::SensorData_t sensorData = {0, 0, 0};
+sensor::RawData_t sensorRaw = {0.0, 0.0, 0.0};
+sensor::BufferData_t sensorBuffer = {0, 0, 0};
+
 lora::ReceivedData_t receivedData = {0.0, 0.0, 0.0};
 u8 requestMessage[1];
 u8 receivedMessage[64];
@@ -35,10 +37,18 @@ void setup()
 {
     Serial.begin(115200);
     lora::shieldInit(BOARD_TYPE);
-    if (BOARD_TYPE == lora::MASTER)
+
+    switch (BOARD_TYPE)
     {
+    case lora::SLAVE:
+        sensor::init();
+        sensor::readRaw(&sensorRaw);
+        break;
+
+    case lora::MASTER:
         attachInterrupt(digitalPinToInterrupt(BOARD_BTN), buttonClickInterrupt,
                         RISING);
+        break;
     }
 }
 
@@ -47,16 +57,26 @@ void loop()
     switch (BOARD_TYPE)
     {
     case lora::SLAVE:
+        sensor::RawData_t measured;
+        sensor::readRaw(&measured);
+
+        bool didChange = false;
+        didChange = sensor::compareValues(&sensorRaw, &measured);
+
+        if (didChange)
+        {
+            sensor::updateBuffer(&sensorBuffer, &sensorRaw);
+        }
+
         if (loraRadio.read(requestMessage))
         {
-            debug::printDebug(debug::INFO, "New request: 0x" + (String(requestMessage[0], HEX)));
+            debug::println(debug::INFO, "New request: 0x" + (String(requestMessage[0], HEX)));
             if (memcmp(requestMessage, requestCode, 1) == 0)
             {
                 memset(requestMessage, 0, 1);
-                debug::printDebug(debug::INFO, "Data request received");
+                debug::println(debug::INFO, "Data request received");
 
-                bme280::readData(&sensorData);
-                lora::sendResponse(&sensorData);
+                // lora::sendResponse(&sensorBuffer);
             }
         }
         break;
