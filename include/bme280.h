@@ -1,14 +1,14 @@
 #ifndef BME280_SENSOR_H
 #define BME280_SENSOR_H
 
-#include <Adafruit_BME280.h>
-#include <Adafruit_Sensor.h>
 #include <Arduino.h>
 #include <SPI.h>
 #include <Wire.h>
+#include <Adafruit_BME280.h>
+#include <Adafruit_Sensor.h>
 
-#include "debug.h"
 #include "globals.h"
+#include "debug.h"
 
 #define SDA_PIN PB7
 #define SCL_PIN PB6
@@ -18,7 +18,7 @@
 namespace sensor
 {
     /**
-     * @brief Raw data read from sensors of the BME280 breakout board.
+     * @brief Raw data read from BME280 breakout board.
      * Everything in floating point.
      */
     typedef struct

@@ -3,6 +3,9 @@
 
 #include <Arduino.h>
 
+#include "globals.h"
+#include "bme280.h"
+
 namespace debug
 {
     /**

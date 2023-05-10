@@ -1,5 +1,4 @@
 #include "bme280.h"
-#include "debug.h"
 
 Adafruit_BME280 bme;
 
@@ -34,9 +33,9 @@ namespace sensor
     bool compareValues(RawData_t *current, RawData_t *measured)
     {
         // Get relative diff between current and measured
-        u16 temperatureDiff = abs((measured->temperature - current->temperature) / current->temperature);
-        u16 pressureDiff = abs((measured->pressure - current->pressure) / current->pressure);
-        u16 humidityDiff = abs((measured->humidity - current->humidity) / current->humidity);
+        u16 temperatureDiff = abs(measured->temperature - current->temperature);
+        u16 pressureDiff = abs(measured->pressure - current->pressure);
+        u16 humidityDiff = abs(measured->humidity - current->humidity);
 
         bool didChange = false;
 

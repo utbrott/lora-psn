@@ -51,7 +51,7 @@ namespace lora
      * @param   *data: data from the sensor, if connected
      * otherwise defaults to empty array
      */
-    void sendResponse(bme280::SensorData_t *data);
+    void sendResponse(sensor::BufferData_t *data);
 
     /**
      * @brief   Read response from LoRa connection
