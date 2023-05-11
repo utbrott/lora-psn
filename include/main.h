@@ -12,7 +12,7 @@
 #define REQ_VALUE(ID, REQ) ((ID) + (REQ))
 
 #define BOARD_BTN PC13
-#define BOARD_LED PA5
+#define SLAVE_INTERRUPT_PIN PB3
 
 /**
  * @brief Raw data read by the BME280 sensor

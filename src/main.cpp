@@ -40,15 +40,19 @@ void setup()
     {
         sensor::init();
         sensor::readRaw(&sensorRaw);
-        pinMode(BOARD_LED, OUTPUT);
-        attachInterrupt(digitalPinToInterrupt(BOARD_LED), Swi_DataRequest,
-                        RISING);
+
+        pinMode(LED_BUILTIN, OUTPUT);
+        digitalWrite(LED_BUILTIN, 0);
+        attachInterrupt(digitalPinToInterrupt(SLAVE_INTERRUPT_PIN),
+                        Swi_DataRequest, RISING);
+
         break;
     }
 
     case lora::MASTER:
         attachInterrupt(digitalPinToInterrupt(BOARD_BTN), Hwi_ButtonClick,
                         RISING);
+
         break;
     }
 }
@@ -59,6 +63,20 @@ void loop()
     {
     case lora::SLAVE:
     {
+        if (loraRadio.read(requestMessage))
+        {
+            debug::println(debug::INFO, "new request");
+            digitalWrite(LED_BUILTIN, 1); // This triggers the interrupt
+            // debug::println(debug::INFO, "New request: 0x" + (String(requestMessage[0], HEX)));
+            // if (memcmp(requestMessage, requestCode, 1) == 0)
+            // {
+            //     memset(requestMessage, 0, 1);
+            //     debug::println(debug::INFO, "Data request received");
+
+            //     // lora::sendResponse(&sensorBuffer);
+            // }
+        }
+
         sensor::RawData_t measured;
         bool didChange = false;
         if (next)
@@ -76,17 +94,6 @@ void loop()
             didChange = false;
         }
 
-        // if (loraRadio.read(requestMessage))
-        // {
-        //     debug::println(debug::INFO, "New request: 0x" + (String(requestMessage[0], HEX)));
-        //     if (memcmp(requestMessage, requestCode, 1) == 0)
-        //     {
-        //         memset(requestMessage, 0, 1);
-        //         debug::println(debug::INFO, "Data request received");
-
-        //         // lora::sendResponse(&sensorBuffer);
-        //     }
-        // }
         break;
     }
 
@@ -118,4 +125,10 @@ void loop()
 }
 
 void Hwi_ButtonClick(void) { BOOL(boardBtnPressed); }
-void Swi_DataRequest(void) { BOOL(newDataRequest); }
+void Swi_DataRequest(void)
+{
+    BOOL(newDataRequest);
+    debug::println(debug::INFO, "in interrupt");
+    delay(10);
+    digitalWrite(LED_BUILTIN, 0);
+}
