@@ -3,6 +3,9 @@
 
 #include <Arduino.h>
 
+#include "globals.h"
+#include "bme280.h"
+
 namespace debug
 {
     /**
@@ -20,7 +23,7 @@ namespace debug
      * @param type: Debug message type @ref MsgType_t
      * @param msg: Message string
      */
-    void printDebug(MsgType_t type, String msg);
+    void println(MsgType_t type, String msg);
 }
 
 #endif /* DEBUG_H */

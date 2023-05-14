@@ -1,9 +1,15 @@
 {
+    "Debug Serial message": {
+		"prefix": "debug",
+		"body": [
+			"debug::println(debug::${1:INFO}, \"$2\");",
+		],
+		"description": "Print Serial debug message"
+	},
     "Serial log": {
 		"prefix": "log",
 		"body": [
-			"debug::printDebug(debug::${0:INFO}, \"$2\"",
+			"Serial.println($1)",
 		],
-		"description": "Print Serial debug message"
+		"description": "Print Serial message"
 	}
-}

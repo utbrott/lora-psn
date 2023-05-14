@@ -33,6 +33,13 @@ namespace lora
         f32 humidity;
     } ReceivedData_t;
 
+    enum dataId : const char
+    {
+        TEMPERATURE = 0x10,
+        PRESSURE = 0x20,
+        HUMIDITY = 0x30,
+    };
+
     /**
      * @brief   Initialize LoRa shield
      * @param   boardType: Board type, values from @ref BoardType_t
@@ -44,14 +51,14 @@ namespace lora
      * @brief   Sends data request
      * @note    MASTER boards only
      */
-    void sendRequest(void);
+    void sendRequest(u8 message);
 
     /**
      * @brief   Sends response with sensor data (if on board)
      * @param   *data: data from the sensor, if connected
      * otherwise defaults to empty array
      */
-    void sendResponse(bme280::SensorData_t *data);
+    void sendResponse(sensor::BufferData_t *buffer, u8 dataId);
 
     /**
      * @brief   Read response from LoRa connection
