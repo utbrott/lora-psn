@@ -1,4 +1,4 @@
-# LoRaWAN Private Sensor Network
+# LoRa Private Sensor Network
 
 Embedded Systems IOT project that utilizes STM32 Nucleo and USI STM32 LoRa expansion to create a private sensor network.
 
@@ -18,18 +18,20 @@ Developed for Master's Thesis @ WUT Warsaw University of Technology.
 # File structure:
 
 ```
-|
-|-- src
-|   |
-|   |- main.h
-|   |- main.cpp
-|   |- lora.h (interfacing with LoRa WAN Shield)
-|   |- lora.cpp
-|   |- bme280_sensor.h (interfacing, using Adafruit BME280 sensor)
-|   |- bme280_sensor.cpp
-|
-|- platformio.ini (project config for PlatformIO)
-|- README.md --> This file
+.
+├── include
+│   ├── bme280.h    (interfacing with Adafruit BME280 breakout board)
+│   ├── debug.h     (helper function for debugging through Serial)
+│   ├── globals.h   (project-wide typedefs)
+│   ├── lora.h      (interfacting with USI STM32 LoRa shield)
+│   └── main.h
+├── src
+│   ├── bme280.cpp
+│   ├── debug.cpp
+│   ├── lora.cpp
+│   └── main.cpp
+├── platformio.ini
+└── README.md --> this file
 ```
 
 ## Future development note
