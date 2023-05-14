@@ -26,7 +26,7 @@ namespace sensor
     void readRaw(RawData_t *data)
     {
         data->temperature = bme.readTemperature();
-        data->pressure = (bme.readPressure() / 100.0f); // 1Pa accuracy is not needed, round to hPa
+        data->pressure = (bme.readPressure());
         data->humidity = bme.readHumidity();
     }
 
@@ -47,7 +47,7 @@ namespace sensor
         }
 
         // Pressure: update if changed by more than 1hPa
-        if (pressureDiff > 1)
+        if (pressureDiff > 100)
         {
             current->pressure = measured->pressure;
             didChange = true;
@@ -66,7 +66,10 @@ namespace sensor
     void updateBuffer(BufferData_t *buffer, RawData_t *raw)
     {
         buffer->temperature = (u16)(raw->temperature * 100.0f);
-        buffer->pressure = (u16)(raw->pressure);
+        buffer->pressure = (u16)(raw->pressure / 100.0f);
         buffer->humidity = (u16)(raw->humidity * 100.0f);
+
+        String values = "\n" + String(buffer->temperature) + " " + String(buffer->pressure) + " " + String(buffer->humidity);
+        Serial.println(values);
     }
 }

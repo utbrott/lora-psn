@@ -7,7 +7,7 @@ HardwareSerial SerialLora(UART1_RX, UART1_TX);
 namespace lora
 {
 
-    void shieldInit(lora::BoardType_t type)
+    void shieldInit(BoardType_t type)
     {
         switch (type)
         {
@@ -29,31 +29,46 @@ namespace lora
         debug::println(debug::INFO, "Shield ready!");
     }
 
-    void sendRequest(void)
+    void sendRequest(u8 message)
     {
-        u8 message[] = {0xff};
-        debug::println(debug::INFO, "Sending new requst with value 0xFF...");
+        u8 msg[] = {message};
+        debug::println(debug::INFO, "Sending new requst with value 0x" + String(message, HEX));
 
-        loraRadio.write(message, sizeof(message));
+        loraRadio.write(msg, sizeof(msg));
     }
 
     // Only for SLAVE modules
-    void sendResponse(sensor::BufferData_t *data)
+    void sendResponse(sensor::BufferData_t *buffer, u8 dataId)
     {
-        u8 message[6]; // Payload
+        u8 message[2]; // Payload
+        u16 bufferValue;
 
-        // Split each 16-bit field into 2x 8-bit with bit masking
-        message[0] = (data->temperature & 0xff00) >> 8;
-        message[1] = (data->temperature & 0x00ff);
-        message[2] = (data->pressure & 0xff00) >> 8;
-        message[3] = (data->pressure & 0x00ff);
-        message[4] = (data->humidity & 0xff00) >> 8;
-        message[5] = (data->humidity & 0x00ff);
+        String values = "\n" + String(buffer->temperature) + " " + String(buffer->pressure) + " " + String(buffer->humidity);
+        Serial.println(values);
 
-        debug::println(debug::INFO, "Sending response with payload...");
+        switch (dataId)
+        {
+        case TEMPERATURE:
+            bufferValue = (u16)buffer->temperature;
+            break;
 
-        u8 dataSent = loraRadio.write(message, sizeof(message));
-        Serial.println(dataSent);
+        case PRESSURE:
+            bufferValue = (u16)buffer->pressure;
+            break;
+
+        case HUMIDITY:
+            bufferValue = (u16)buffer->humidity;
+            break;
+        }
+
+        Serial.println(bufferValue);
+
+        // Split 16-bit field into 2x 8-bit with bit masking
+        message[0] = (bufferValue & 0xff00) >> 8;
+        message[1] = (bufferValue & 0x00ff);
+
+        debug::println(debug::INFO, "Sending response");
+        loraRadio.write(message, sizeof(message));
     }
 
     // Only for MASTER module

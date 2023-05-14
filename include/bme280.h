@@ -13,7 +13,6 @@
 #define SDA_PIN PB7
 #define SCL_PIN PB6
 #define SENSOR_ADDR 0x77
-#define SEA_LEVEL_PRESSURE 1013.25
 
 namespace sensor
 {
