@@ -10,8 +10,6 @@
 
 #define INVERT(x) (x = (x + 1) % 2)
 
-#define REQ_VALUE(ID, REQ) ((ID) + (REQ))
-
 #define BOARD_BTN PC13
 #define SLAVE_INTERRUPT_PIN PB3
 

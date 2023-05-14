@@ -1,12 +1,12 @@
 #include "main.h"
 
-#define BOARD_TYPE lora::SLAVE
+#define BOARD_TYPE lora::MASTER
 /**
  * @brief Sets board ID
  * @note MASTER: 0x00,
  * @note SLAVE: 0x01 - 0x0f
  */
-#define BOARD_ID 0x01
+#define BOARD_ID 0x00
 
 #if BOARD_ID == 0x00
 #define PERIOD_MS 60000 // (milliseconds) between new requests
@@ -87,7 +87,7 @@ void loop()
     case lora::MASTER:
         if (boardBtnPressed)
         {
-            lora::sendRequest(0x21);
+            lora::sendRequest(0x11);
             INVERT(boardBtnPressed);
         }
 
