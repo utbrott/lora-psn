@@ -8,7 +8,8 @@
 #include "lora.h"
 #include "debug.h"
 
-#define BOOL(x) (x = (x + 1) % 2)
+#define INVERT(x) (x = (x + 1) % 2)
+
 #define REQ_VALUE(ID, REQ) ((ID) + (REQ))
 
 #define BOARD_BTN PC13
@@ -29,6 +30,8 @@ extern sensor::BufferData_t sensorBuffer;
  */
 extern lora::ReceivedData_t receivedData;
 
+static const char slaveId[] = {0x01, 0x02, 0x03};
+
 /**
  * @brief Request message sent by MASTER module and received by SLAVE module
  */
@@ -45,11 +48,6 @@ extern u8 receivedMessage[64];
 extern u8 boardBtnPressed;
 
 /**
- * @brief Flag to hold current button interrupt state value
- */
-extern u8 newDataRequest;
-
-/**
  * @brief Time keeping variable
  * @note for MASTER - time between new requests in network
  * @note for SLAVE - time between taking new measurements
@@ -61,7 +59,7 @@ extern u32 timer;
  * @note for MASTER - new requests to the network
  * @note for SLAVE - new measurement
  */
-extern bool next;
+extern u8 next;
 
 /**
  * @brief Button press interrupt handler
@@ -72,5 +70,21 @@ extern void Hwi_ButtonClick(void);
  * @brief New data request interrupt handler
  */
 extern void Swi_DataRequest(void);
+
+/**
+ * @brief Get the Data Id
+ *
+ * @param request Request value from LoRa message
+ * @return u8 Data Id
+ */
+extern u8 getDataId(u8 request);
+
+/**
+ * @brief Get the Board Id
+ *
+ * @param request Request value from LoRa message
+ * @return u8
+ */
+extern u8 getBoardId(u8 request);
 
 #endif /* MAIN_H */

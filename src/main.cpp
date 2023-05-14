@@ -24,7 +24,7 @@ u8 receivedMessage[64];
 u8 requestCode[] = {0x01, 0x02}; // SLAVE IDs to ask for data
 
 u32 timer = 0;
-bool next = false;
+u8 next = 0;
 
 u8 boardBtnPressed = 0;
 u8 newDataRequest = 0;
@@ -40,6 +40,7 @@ void setup()
     {
         sensor::init();
         sensor::readRaw(&sensorRaw);
+        sensor::updateBuffer(&sensorBuffer, &sensorRaw);
 
         pinMode(LED_BUILTIN, OUTPUT);
         digitalWrite(LED_BUILTIN, 0);
@@ -62,53 +63,38 @@ void loop()
     switch (BOARD_TYPE)
     {
     case lora::SLAVE:
-    {
         if (loraRadio.read(requestMessage))
         {
-            debug::println(debug::INFO, "new request");
-            digitalWrite(LED_BUILTIN, 1); // This triggers the interrupt
-            // debug::println(debug::INFO, "New request: 0x" + (String(requestMessage[0], HEX)));
-            // if (memcmp(requestMessage, requestCode, 1) == 0)
-            // {
-            //     memset(requestMessage, 0, 1);
-            //     debug::println(debug::INFO, "Data request received");
-
-            //     // lora::sendResponse(&sensorBuffer);
-            // }
+            // This will trigger an interrupt
+            digitalWrite(LED_BUILTIN, 1);
         }
 
         sensor::RawData_t measured;
-        bool didChange = false;
         if (next)
         {
             sensor::readRaw(&measured);
-            didChange = sensor::compareValues(&sensorRaw, &measured);
             timer = millis();
-            next = false;
+            INVERT(next);
         }
 
-        if (didChange)
+        if (sensor::compareValues(&sensorRaw, &measured))
         {
-            debug::println(debug::INFO, "Data changed, updating buffer");
             sensor::updateBuffer(&sensorBuffer, &sensorRaw);
-            didChange = false;
+            debug::println(debug::INFO, "Data changed, updating buffer");
         }
-
         break;
-    }
 
     case lora::MASTER:
-
         if (boardBtnPressed)
         {
-            lora::sendRequest();
-            BOOL(boardBtnPressed);
+            lora::sendRequest(0x21);
+            INVERT(boardBtnPressed);
         }
 
         if (next)
         {
             timer = millis();
-            next = false;
+            INVERT(next);
         }
 
         if (loraRadio.read(receivedMessage) > 0)
@@ -120,15 +106,34 @@ void loop()
 
     if ((millis() - timer) >= PERIOD_MS)
     {
-        next = true;
+        INVERT(next);
     }
 }
 
-void Hwi_ButtonClick(void) { BOOL(boardBtnPressed); }
+void Hwi_ButtonClick(void) { INVERT(boardBtnPressed); }
 void Swi_DataRequest(void)
 {
-    BOOL(newDataRequest);
-    debug::println(debug::INFO, "in interrupt");
-    delay(10);
-    digitalWrite(LED_BUILTIN, 0);
+    String values = "\n" + String(sensorBuffer.temperature) + " " + String(sensorBuffer.pressure) + " " + String(sensorBuffer.humidity);
+    Serial.println(values);
+
+    if (getBoardId(requestMessage[0]) != BOARD_ID)
+    {
+        digitalWrite(LED_BUILTIN, 0);
+        return;
+    }
+
+    u8 dataId = getDataId(requestMessage[0]);
+    lora::sendResponse(&sensorBuffer, dataId);
+
+    digitalWrite(LED_BUILTIN, 0); // Turn off the LED when done, visual indicator
+}
+
+u8 getDataId(u8 request)
+{
+    return (request & 0xf0);
+}
+
+u8 getBoardId(u8 request)
+{
+    return (request & 0x0f);
 }
