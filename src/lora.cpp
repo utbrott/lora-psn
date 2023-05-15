@@ -2,6 +2,9 @@
 #include "bme280.h"
 #include "debug.h"
 
+#define UPPER_BITMASK 0xff00
+#define LOWER_BITMASK 0x00ff
+
 HardwareSerial SerialLora(UART1_RX, UART1_TX);
 
 namespace lora
@@ -43,9 +46,6 @@ namespace lora
         u8 message[2]; // Payload
         u16 bufferValue;
 
-        String values = "\n" + String(buffer->temperature) + " " + String(buffer->pressure) + " " + String(buffer->humidity);
-        Serial.println(values);
-
         switch (dataId)
         {
         case TEMPERATURE:
@@ -61,11 +61,9 @@ namespace lora
             break;
         }
 
-        Serial.println(bufferValue);
-
         // Split 16-bit field into 2x 8-bit with bit masking
-        message[0] = (bufferValue & 0xff00) >> 8;
-        message[1] = (bufferValue & 0x00ff);
+        message[0] = (bufferValue & UPPER_BITMASK) >> 8;
+        message[1] = (bufferValue & LOWER_BITMASK);
 
         debug::println(debug::INFO, "Sending response");
         loraRadio.write(message, sizeof(message));

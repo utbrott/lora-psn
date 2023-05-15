@@ -37,7 +37,6 @@ void setup()
     switch (BOARD_TYPE)
     {
     case lora::SLAVE:
-    {
         sensor::init();
         sensor::readRaw(&sensorRaw);
         sensor::updateBuffer(&sensorBuffer, &sensorRaw);
@@ -45,14 +44,13 @@ void setup()
         pinMode(LED_BUILTIN, OUTPUT);
         digitalWrite(LED_BUILTIN, 0);
         attachInterrupt(digitalPinToInterrupt(SLAVE_INTERRUPT_PIN),
-                        Swi_DataRequest, RISING);
+                        dataRequestInterruptHandler, RISING);
 
         break;
-    }
 
     case lora::MASTER:
-        attachInterrupt(digitalPinToInterrupt(BOARD_BTN), Hwi_ButtonClick,
-                        RISING);
+        attachInterrupt(digitalPinToInterrupt(BOARD_BTN),
+                        buttonClickInterruptHandler, RISING);
 
         break;
     }
@@ -110,30 +108,15 @@ void loop()
     }
 }
 
-void Hwi_ButtonClick(void) { INVERT(boardBtnPressed); }
-void Swi_DataRequest(void)
+void buttonClickInterruptHandler(void) { INVERT(boardBtnPressed); }
+void dataRequestInterruptHandler(void)
 {
-    String values = "\n" + String(sensorBuffer.temperature) + " " + String(sensorBuffer.pressure) + " " + String(sensorBuffer.humidity);
-    Serial.println(values);
-
-    if (getBoardId(requestMessage[0]) != BOARD_ID)
+    if (BOARDID_MASK(requestMessage[0]) != BOARD_ID)
     {
         digitalWrite(LED_BUILTIN, 0);
         return;
     }
 
-    u8 dataId = getDataId(requestMessage[0]);
-    lora::sendResponse(&sensorBuffer, dataId);
-
+    lora::sendResponse(&sensorBuffer, DATAID_MASK(requestMessage[0]));
     digitalWrite(LED_BUILTIN, 0); // Turn off the LED when done, visual indicator
-}
-
-u8 getDataId(u8 request)
-{
-    return (request & 0xf0);
-}
-
-u8 getBoardId(u8 request)
-{
-    return (request & 0x0f);
 }

@@ -9,6 +9,8 @@
 #include "debug.h"
 
 #define INVERT(x) (x = (x + 1) % 2)
+#define DATAID_MASK(req) (req & 0xf0)
+#define BOARDID_MASK(req) (req & 0x0f)
 
 #define BOARD_BTN PC13
 #define SLAVE_INTERRUPT_PIN PB3
@@ -62,27 +64,11 @@ extern u8 next;
 /**
  * @brief Button press interrupt handler
  */
-extern void Hwi_ButtonClick(void);
+extern void buttonClickInterruptHandler(void);
 
 /**
  * @brief New data request interrupt handler
  */
-extern void Swi_DataRequest(void);
-
-/**
- * @brief Get the Data Id
- *
- * @param request Request value from LoRa message
- * @return u8 Data Id
- */
-extern u8 getDataId(u8 request);
-
-/**
- * @brief Get the Board Id
- *
- * @param request Request value from LoRa message
- * @return u8
- */
-extern u8 getBoardId(u8 request);
+extern void dataRequestInterruptHandler(void);
 
 #endif /* MAIN_H */
