@@ -41,12 +41,12 @@ namespace lora
     }
 
     // Only for SLAVE modules
-    void sendResponse(sensor::BufferData_t *buffer, u8 dataId)
+    void sendResponse(sensor::BufferData_t *buffer, u8 reqMsg)
     {
-        u8 message[2]; // Payload
+        u8 message[3]; // Payload
         u16 bufferValue;
 
-        switch (dataId)
+        switch (DATAID_MASK(reqMsg))
         {
         case TEMPERATURE:
             bufferValue = (u16)buffer->temperature;
@@ -64,6 +64,7 @@ namespace lora
         // Split 16-bit field into 2x 8-bit with bit masking
         message[0] = (bufferValue & UPPER_BITMASK) >> 8;
         message[1] = (bufferValue & LOWER_BITMASK);
+        message[2] = reqMsg; // Request message is part of response
 
         debug::println(debug::INFO, "Sending response");
         loraRadio.write(message, sizeof(message));
@@ -76,7 +77,7 @@ namespace lora
         data->temperature = (f32)((message[0] << 8) + message[1]) / 100;
         data->pressure = (f32)((message[2] << 8) + message[3]);
         data->humidity = (f32)((message[4] << 8) + message[5]) / 100;
-        memset(message, 0, 8);
+        memset(message, 0, 8); // TODO: Actually needed?
 
         String temperatureMsg = "Temperature: " + String(data->temperature) + "\u00b0C";
         String pressureMsg = "Pressure: " + String(data->pressure) + "hPa";

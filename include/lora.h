@@ -11,6 +11,7 @@
 #define UART1_RX PA10
 #define UART1_TX PA9
 #define ARRAYSIZE(n) (sizeof(n) / sizeof(n[0]))
+#define DATAID_MASK(req) (req & 0xf0)
 
 namespace lora
 {
@@ -58,7 +59,7 @@ namespace lora
      * @param   *data: data from the sensor, if connected
      * otherwise defaults to empty array
      */
-    void sendResponse(sensor::BufferData_t *buffer, u8 dataId);
+    void sendResponse(sensor::BufferData_t *buffer, u8 reqCode);
 
     /**
      * @brief   Read response from LoRa connection

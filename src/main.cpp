@@ -18,12 +18,13 @@ sensor::RawData_t sensorRaw = {0.0, 0.0, 0.0};
 sensor::BufferData_t sensorBuffer = {0, 0, 0};
 
 lora::ReceivedData_t receivedData = {0.0, 0.0, 0.0};
-u8 requestMessage[1];
-u8 receivedMessage[64];
+u8 updateRequestMsg[1]; // SLAVE only
+u8 receivedMsg[64];     // MASTER only
 
-u8 requestCode[] = {0x01, 0x02}; // SLAVE IDs to ask for data
+u8 requestCode[];
 
 u32 timer = 0;
+u32 timeout = 0;
 u8 next = 0;
 
 u8 boardBtnPressed = 0;
@@ -44,15 +45,27 @@ void setup()
         pinMode(LED_BUILTIN, OUTPUT);
         digitalWrite(LED_BUILTIN, 0);
         attachInterrupt(digitalPinToInterrupt(SLAVE_INTERRUPT_PIN),
-                        dataRequestInterruptHandler, RISING);
+                        updateRequest_handler, RISING);
 
         break;
 
     case lora::MASTER:
+    {
+        u8 codeItr = 0;
+        for (u8 i = 0; i < sizeof(slaveId); ++i)
+        {
+            for (u8 j = 0; j < sizeof(dataId); ++j)
+            {
+                requestCode[codeItr] = slaveId[i] + dataId[j];
+                ++codeItr;
+            }
+        }
+
         attachInterrupt(digitalPinToInterrupt(BOARD_BTN),
-                        buttonClickInterruptHandler, RISING);
+                        buttonPress_handler, RISING);
 
         break;
+    }
     }
 }
 
@@ -61,7 +74,7 @@ void loop()
     switch (BOARD_TYPE)
     {
     case lora::SLAVE:
-        if (loraRadio.read(requestMessage))
+        if (loraRadio.read(updateRequestMsg))
         {
             // This will trigger an interrupt
             digitalWrite(LED_BUILTIN, 1);
@@ -95,9 +108,9 @@ void loop()
             INVERT(next);
         }
 
-        if (loraRadio.read(receivedMessage) > 0)
+        if (loraRadio.read(receivedMsg) > 0)
         {
-            lora::readResponse(&receivedData, receivedMessage);
+            lora::readResponse(&receivedData, receivedMsg);
         }
         break;
     }
@@ -108,15 +121,32 @@ void loop()
     }
 }
 
-void buttonClickInterruptHandler(void) { INVERT(boardBtnPressed); }
-void dataRequestInterruptHandler(void)
+void buttonPress_handler(void) { INVERT(boardBtnPressed); }
+void updateRequest_handler(void)
 {
-    if (BOARDID_MASK(requestMessage[0]) != BOARD_ID)
+    if (BOARDID_MASK(updateRequestMsg[0]) != BOARD_ID)
     {
         digitalWrite(LED_BUILTIN, 0);
         return;
     }
 
-    lora::sendResponse(&sensorBuffer, DATAID_MASK(requestMessage[0]));
+    lora::sendResponse(&sensorBuffer, updateRequestMsg[0]);
     digitalWrite(LED_BUILTIN, 0); // Turn off the LED when done, visual indicator
+}
+
+bool fetchDataUpdate(u8 requestCode)
+{
+    lora::sendRequest(requestCode);
+    while (!(loraRadio.read(receivedMsg) > 0))
+    {
+        timeout = millis();
+        // If MASTER waits 500ms for response, treat fetch as failed
+        if ((millis() - timeout) >= TIMEOUT_MS)
+        {
+            timeout = 0;
+            return false;
+        }
+    }
+
+    u8 responseCode = receivedMsg[3];
 }
