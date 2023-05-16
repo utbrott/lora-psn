@@ -3,6 +3,9 @@
 
 #include <Arduino.h>
 
+#define DATAID_MASK(req) (req & 0xf0)
+#define BOARDID_MASK(req) (req & 0x0f)
+
 /**
  * @defgroup    Global_Typedef
  * @brief       Global typedefinitons

@@ -17,11 +17,11 @@
 sensor::RawData_t sensorRaw = {0.0, 0.0, 0.0};
 sensor::BufferData_t sensorBuffer = {0, 0, 0};
 
-lora::ReceivedData_t receivedData = {0.0, 0.0, 0.0};
-u8 requestMessage[1];
-u8 receivedMessage[64];
+lora::ReceivedData_t receivedData = {{0.0, 0.0, 0.0}, {0.0, 0.0, 0.0}, {0.0, 0.0, 0.0}};
+u8 updateRequestMsg[1]; // SLAVE only
+u8 receivedMsg[64];     // MASTER only
 
-u8 requestCode[] = {0x01, 0x02}; // SLAVE IDs to ask for data
+u8 requestCode[sizeof(slaveId) * sizeof(dataId)];
 
 u32 timer = 0;
 u8 next = 0;
@@ -45,16 +45,28 @@ void setup()
         pinMode(LED_BUILTIN, OUTPUT);
         digitalWrite(LED_BUILTIN, 0);
         attachInterrupt(digitalPinToInterrupt(SLAVE_INTERRUPT_PIN),
-                        Swi_DataRequest, RISING);
+                        updateRequest_handler, RISING);
 
         break;
     }
 
     case lora::MASTER:
-        attachInterrupt(digitalPinToInterrupt(BOARD_BTN), Hwi_ButtonClick,
-                        RISING);
+    {
+        u8 codeItr = 0;
+        for (u8 i = 0; i < sizeof(dataId); ++i)
+        {
+            for (u8 j = 0; j < sizeof(slaveId); ++j)
+            {
+                requestCode[codeItr] = slaveId[j] + dataId[i];
+                ++codeItr;
+            }
+        }
+
+        attachInterrupt(digitalPinToInterrupt(BOARD_BTN),
+                        buttonPress_handler, RISING);
 
         break;
+    }
     }
 }
 
@@ -63,7 +75,7 @@ void loop()
     switch (BOARD_TYPE)
     {
     case lora::SLAVE:
-        if (loraRadio.read(requestMessage))
+        if (loraRadio.read(updateRequestMsg))
         {
             // This will trigger an interrupt
             digitalWrite(LED_BUILTIN, 1);
@@ -85,21 +97,12 @@ void loop()
         break;
 
     case lora::MASTER:
-        if (boardBtnPressed)
-        {
-            lora::sendRequest(0x11);
-            INVERT(boardBtnPressed);
-        }
-
         if (next)
         {
             timer = millis();
-            INVERT(next);
-        }
+            masterNewFetch_handler();
 
-        if (loraRadio.read(receivedMessage) > 0)
-        {
-            lora::readResponse(&receivedData, receivedMessage);
+            INVERT(next);
         }
         break;
     }
@@ -110,30 +113,84 @@ void loop()
     }
 }
 
-void Hwi_ButtonClick(void) { INVERT(boardBtnPressed); }
-void Swi_DataRequest(void)
+void buttonPress_handler(void)
 {
-    String values = "\n" + String(sensorBuffer.temperature) + " " + String(sensorBuffer.pressure) + " " + String(sensorBuffer.humidity);
-    Serial.println(values);
+    masterNewFetch_handler();
+}
 
-    if (getBoardId(requestMessage[0]) != BOARD_ID)
+void updateRequest_handler(void)
+{
+    if (BOARDID_MASK(updateRequestMsg[0]) != BOARD_ID)
     {
         digitalWrite(LED_BUILTIN, 0);
         return;
     }
 
-    u8 dataId = getDataId(requestMessage[0]);
-    lora::sendResponse(&sensorBuffer, dataId);
-
+    lora::sendResponse(&sensorBuffer, updateRequestMsg[0]);
     digitalWrite(LED_BUILTIN, 0); // Turn off the LED when done, visual indicator
 }
 
-u8 getDataId(u8 request)
+void masterNewFetch_handler(void)
 {
-    return (request & 0xf0);
+    for (u8 itr = 0; itr < sizeof(requestCode); ++itr)
+    {
+        fetchDataUpdate(requestCode[itr]);
+    }
+
+    logReceivedData();
 }
 
-u8 getBoardId(u8 request)
+void fetchDataUpdate(u8 requestCode)
 {
-    return (request & 0x0f);
+    lora::sendRequest(requestCode);
+
+    // If MASTER waits 500ms for response, treat fetch as failed
+    u32 timeout = millis();
+    while (!(loraRadio.read(receivedMsg) > 0))
+    {
+        if ((millis() - timeout) >= TIMEOUT_MS)
+        {
+            timeout = millis();
+            debug::println(debug::ERR, "Request 0x" + String(requestCode, HEX) + " timed out.");
+            return;
+        }
+    }
+
+    // No timeout, check response code matches request code
+    if (receivedMsg[2] != requestCode)
+    {
+        debug::println(debug::ERR, "Fetch failed, response did not match.");
+        return;
+    }
+
+    lora::readResponse(&receivedData, receivedMsg);
 }
+
+void logReceivedData(void)
+{
+    Serial.println("\n");
+    debug::println(debug::INFO, "Fetched data:");
+
+    Serial.print("Temperature:\t");
+    for (int i = 0; i < 3; ++i)
+    {
+        Serial.print(receivedData.temperature[i]);
+        Serial.print("\t");
+    }
+    Serial.println();
+
+    Serial.print("Pressure:\t");
+    for (int i = 0; i < 3; ++i)
+    {
+        Serial.print(receivedData.pressure[i]);
+        Serial.print("\t");
+    }
+    Serial.println();
+
+    Serial.print("Humidity:\t");
+    for (int i = 0; i < 3; ++i)
+    {
+        Serial.print(receivedData.humidity[i]);
+        Serial.print("\t");
+    }
+    Serial.println();
