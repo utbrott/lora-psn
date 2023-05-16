@@ -9,8 +9,6 @@
 #include "debug.h"
 
 #define INVERT(x) (x = (x + 1) % 2)
-#define DATAID_MASK(req) (req & 0xf0)
-#define BOARDID_MASK(req) (req & 0x0f)
 
 #define BOARD_BTN PC13
 #define SLAVE_INTERRUPT_PIN PB3
@@ -59,12 +57,6 @@ extern u8 boardBtnPressed;
 extern u32 timer;
 
 /**
- * @brief Keeps value (in milliseconds) of time passed since
- * request was sent. Used for timing out update operation.
- */
-extern u32 timeout;
-
-/**
  * @brief Flag to keep if next routine should be made
  * @note for MASTER - new requests to the network
  * @note for SLAVE - new measurement
@@ -73,20 +65,28 @@ extern u8 next;
 
 /**
  * @brief Button press interrupt handler
+ * @note MASTER boards only
  */
 extern void buttonPress_handler(void);
 
 /**
  * @brief New data request interrupt handler
+ * @note SLAVE boards only
  */
 extern void updateRequest_handler(void);
 
 /**
- * @brief
- *
- * @param requestCode Request code built from SLAVE Id and DATA Id
- * @returns boolean - Fetched successfully or not.
+ * @brief Handler for making new fetch with timer or button press interrupt
  */
-extern bool fetchDataUpdate(u8 requestCode);
+extern void masterNewFetch_handler(void);
+
+/**
+ * @brief Performs data update routine with specifed request code
+ * @param requestCode Request code built from SLAVE Id and DATA Id
+ */
+extern void fetchDataUpdate(u8 requestCode);
+
+// Temporary
+extern void logReceivedData(void);
 
 #endif /* MAIN_H */

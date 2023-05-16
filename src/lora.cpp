@@ -73,26 +73,22 @@ namespace lora
     // Only for MASTER module
     void readResponse(ReceivedData_t *data, u8 message[])
     {
+        u8 boardId = BOARDID_MASK(message[2]) - 1;
         // Merge each 2x 8-bit fields into 1x 16-bit one, fix magnitudes
-        data->temperature = (f32)((message[0] << 8) + message[1]) / 100;
-        data->pressure = (f32)((message[2] << 8) + message[3]);
-        data->humidity = (f32)((message[4] << 8) + message[5]) / 100;
-        memset(message, 0, 8); // TODO: Actually needed?
-
-        String temperatureMsg = "Temperature: " + String(data->temperature) + "\u00b0C";
-        String pressureMsg = "Pressure: " + String(data->pressure) + "hPa";
-        String humidityMsg = "Humidity: " + String(data->humidity) + "%";
-
-        String formattedMessage[4] = {
-            "Response received",
-            temperatureMsg,
-            pressureMsg,
-            humidityMsg,
-        };
-
-        for (u8 i = 0; i < ARRAYSIZE(formattedMessage); ++i)
+        switch (DATAID_MASK(message[2]))
         {
-            debug::println(debug::INFO, formattedMessage[i]);
+        case TEMPERATURE:
+            data->temperature[boardId] = (f32)((message[0] << 8) + message[1]) / 100;
+            break;
+
+        case PRESSURE:
+            data->pressure[boardId] = (f32)((message[0] << 8) + message[1]);
+            break;
+
+        case HUMIDITY:
+            data->humidity[boardId] = (f32)((message[0] << 8) + message[1]) / 100;
+            break;
         }
+        memset(message, 0, 3); // TODO: Actually needed?
     }
 }

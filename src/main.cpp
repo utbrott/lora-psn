@@ -17,14 +17,13 @@
 sensor::RawData_t sensorRaw = {0.0, 0.0, 0.0};
 sensor::BufferData_t sensorBuffer = {0, 0, 0};
 
-lora::ReceivedData_t receivedData = {0.0, 0.0, 0.0};
+lora::ReceivedData_t receivedData = {{0.0, 0.0, 0.0}, {0.0, 0.0, 0.0}, {0.0, 0.0, 0.0}};
 u8 updateRequestMsg[1]; // SLAVE only
 u8 receivedMsg[64];     // MASTER only
 
-u8 requestCode[];
+u8 requestCode[sizeof(slaveId) * sizeof(dataId)];
 
 u32 timer = 0;
-u32 timeout = 0;
 u8 next = 0;
 
 u8 boardBtnPressed = 0;
@@ -38,6 +37,7 @@ void setup()
     switch (BOARD_TYPE)
     {
     case lora::SLAVE:
+    {
         sensor::init();
         sensor::readRaw(&sensorRaw);
         sensor::updateBuffer(&sensorBuffer, &sensorRaw);
@@ -48,15 +48,16 @@ void setup()
                         updateRequest_handler, RISING);
 
         break;
+    }
 
     case lora::MASTER:
     {
         u8 codeItr = 0;
-        for (u8 i = 0; i < sizeof(slaveId); ++i)
+        for (u8 i = 0; i < sizeof(dataId); ++i)
         {
-            for (u8 j = 0; j < sizeof(dataId); ++j)
+            for (u8 j = 0; j < sizeof(slaveId); ++j)
             {
-                requestCode[codeItr] = slaveId[i] + dataId[j];
+                requestCode[codeItr] = slaveId[j] + dataId[i];
                 ++codeItr;
             }
         }
@@ -96,21 +97,12 @@ void loop()
         break;
 
     case lora::MASTER:
-        if (boardBtnPressed)
-        {
-            lora::sendRequest(0x11);
-            INVERT(boardBtnPressed);
-        }
-
         if (next)
         {
             timer = millis();
-            INVERT(next);
-        }
+            masterNewFetch_handler();
 
-        if (loraRadio.read(receivedMsg) > 0)
-        {
-            lora::readResponse(&receivedData, receivedMsg);
+            INVERT(next);
         }
         break;
     }
@@ -121,7 +113,11 @@ void loop()
     }
 }
 
-void buttonPress_handler(void) { INVERT(boardBtnPressed); }
+void buttonPress_handler(void)
+{
+    masterNewFetch_handler();
+}
+
 void updateRequest_handler(void)
 {
     if (BOARDID_MASK(updateRequestMsg[0]) != BOARD_ID)
@@ -134,19 +130,68 @@ void updateRequest_handler(void)
     digitalWrite(LED_BUILTIN, 0); // Turn off the LED when done, visual indicator
 }
 
-bool fetchDataUpdate(u8 requestCode)
+void masterNewFetch_handler(void)
+{
+    for (u8 itr = 0; itr < sizeof(requestCode); ++itr)
+    {
+        fetchDataUpdate(requestCode[itr]);
+    }
+
+    logReceivedData();
+}
+
+void fetchDataUpdate(u8 requestCode)
 {
     lora::sendRequest(requestCode);
+
+    // If MASTER waits 500ms for response, treat fetch as failed
+    u32 timeout = millis();
     while (!(loraRadio.read(receivedMsg) > 0))
     {
-        timeout = millis();
-        // If MASTER waits 500ms for response, treat fetch as failed
         if ((millis() - timeout) >= TIMEOUT_MS)
         {
-            timeout = 0;
-            return false;
+            timeout = millis();
+            debug::println(debug::ERR, "Request 0x" + String(requestCode, HEX) + " timed out.");
+            return;
         }
     }
 
-    u8 responseCode = receivedMsg[3];
+    // No timeout, check response code matches request code
+    if (receivedMsg[2] != requestCode)
+    {
+        debug::println(debug::ERR, "Fetch failed, response did not match.");
+        return;
+    }
+
+    lora::readResponse(&receivedData, receivedMsg);
+}
+
+void logReceivedData(void)
+{
+    Serial.println("\n");
+    debug::println(debug::INFO, "Fetched data:");
+
+    Serial.print("Temperature:\t");
+    for (int i = 0; i < 3; ++i)
+    {
+        Serial.print(receivedData.temperature[i]);
+        Serial.print("\t");
+    }
+    Serial.println();
+
+    Serial.print("Pressure:\t");
+    for (int i = 0; i < 3; ++i)
+    {
+        Serial.print(receivedData.pressure[i]);
+        Serial.print("\t");
+    }
+    Serial.println();
+
+    Serial.print("Humidity:\t");
+    for (int i = 0; i < 3; ++i)
+    {
+        Serial.print(receivedData.humidity[i]);
+        Serial.print("\t");
+    }
+    Serial.println();
 }

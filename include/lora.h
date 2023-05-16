@@ -11,7 +11,6 @@
 #define UART1_RX PA10
 #define UART1_TX PA9
 #define ARRAYSIZE(n) (sizeof(n) / sizeof(n[0]))
-#define DATAID_MASK(req) (req & 0xf0)
 
 namespace lora
 {
@@ -29,9 +28,9 @@ namespace lora
      */
     typedef struct
     {
-        f32 temperature;
-        f32 pressure;
-        f32 humidity;
+        f32 temperature[3];
+        f32 pressure[3];
+        f32 humidity[3];
     } ReceivedData_t;
 
     enum dataId : const char
