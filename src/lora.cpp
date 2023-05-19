@@ -91,3 +91,4 @@ namespace lora
         }
         memset(message, 0, 3); // TODO: Actually needed?
     }
+}

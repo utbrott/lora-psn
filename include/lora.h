@@ -67,3 +67,4 @@ namespace lora
     void readResponse(ReceivedData_t *receivedData, u8 message[]);
 }
 
+#endif /* LORA_H */
