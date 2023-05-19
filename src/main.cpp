@@ -1,13 +1,14 @@
 #include "main.h"
 
+// In case that build flag was not provided
+#ifndef BOARD_TYPE
 #define BOARD_TYPE lora::MASTER
-/**
- * @brief Sets board ID
- * @note MASTER: 0x00,
- * @note SLAVE: 0x01 - 0x0f
- */
+#endif
+#ifndef BOARD_ID
 #define BOARD_ID 0x00
+#endif
 
+// Set PERIOD_MS based on chosed board
 #if BOARD_ID == 0x00
 #define PERIOD_MS 60000 // (milliseconds) between new requests
 #else
@@ -194,3 +195,4 @@ void logReceivedData(void)
         Serial.print("\t");
     }
     Serial.println();
+}
