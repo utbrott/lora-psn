@@ -4,18 +4,20 @@ Embedded Systems IOT project that utilizes STM32 Nucleo and USI STM32 LoRa expan
 
 Developed for Master's Thesis @ WUT Warsaw University of Technology.
 
-# Features
+## Features
 
-- BME280 Sensor to read surrouding's general temperature and pressure
-- Request to measuring SLAVE is sent only when button on MASTER board is pressed,
+- Slave modules refresh sensor readouts periodically,
+- Slave boards store readouts in a buffer, for faster response handling,
+- Slave responses to Master requests are handled via interrupts,
+- Master board handles requests on a non-blocking timer,
 
-# Built with
+## Built with
 
 - STM32 L152 Nucleo-64 development board,
 - USI STM32 Nucleo expansion board for LoRa,
-- BME280 I2C/SPI breakout board sensors,
+- BME280 I2C/SPI breakout board sensors (SLAVE modules),
 
-# File structure:
+## File structure:
 
 ```
 .
