@@ -92,20 +92,4 @@ extern void fetchDataUpdate(u8 requestCode);
 // Temporary
 extern void logReceivedData(void);
 
-/**
- * @brief Get the Data Id
- *
- * @param request Request value from LoRa message
- * @return u8 Data Id
- */
-extern u8 getDataId(u8 request);
-
-/**
- * @brief Get the Board Id
- *
- * @param request Request value from LoRa message
- * @return u8
- */
-extern u8 getBoardId(u8 request);
-
 #endif /* MAIN_H */
