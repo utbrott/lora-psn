@@ -10,16 +10,16 @@ HardwareSerial SerialLora(UART1_RX, UART1_TX);
 namespace lora
 {
 
-    void shieldInit(BoardType_t type)
+    void shieldInit(BoardType_t type, u8 boardId)
     {
         switch (type)
         {
         case SLAVE:
-            debug::println(debug::INFO, "SLAVE module");
+            debug::println(debug::INFO, "SLAVE module 0x0" + String(boardId, HEX));
             break;
 
         case MASTER:
-            debug::println(debug::INFO, "MASTER module");
+            debug::println(debug::INFO, "MASTER module 0x0" + String(boardId, HEX));
             break;
         }
 

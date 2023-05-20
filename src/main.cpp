@@ -34,7 +34,7 @@ void transmitData(lora::ReceivedData_t *data_ptr);
 void setup()
 {
     Serial.begin(115200);
-    lora::shieldInit(BOARD_TYPE);
+    lora::shieldInit(BOARD_TYPE, BOARD_ID);
 
     switch (BOARD_TYPE)
     {
