@@ -8,9 +8,9 @@
 #define BOARD_ID 0x00
 #endif
 
-// Set PERIOD_MS based on chosed board
+// Set PERIOD_MS based on BOARD_ID
 #if BOARD_ID == 0x00
-#define PERIOD_MS 60000 // (milliseconds) between new requests
+#define PERIOD_MS 2 * 60000 // (milliseconds) between new requests
 #else
 #define PERIOD_MS 5000 // (milliseconds) between new measurements
 #endif
@@ -153,6 +153,7 @@ void fetchDataUpdate(u8 requestCode)
 
     // If MASTER waits 500ms for response, treat fetch as failed
     u32 timeout = millis();
+
     while (!(loraRadio.read(receivedMsg) > 0))
     {
         if ((millis() - timeout) >= TIMEOUT_MS)
@@ -164,13 +165,14 @@ void fetchDataUpdate(u8 requestCode)
     }
 
     // No timeout, check response code matches request code
-    if (receivedMsg[2] != requestCode)
+    if (receivedMsg[0] != requestCode)
     {
         debug::println(debug::ERR, "Fetch failed, response did not match.");
         return;
     }
 
     lora::readResponse(&receivedData, receivedMsg);
+    delay(100); // 100ms blocking delay between requests
 }
 
 void logReceivedData(void)

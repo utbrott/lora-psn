@@ -43,7 +43,11 @@ namespace lora
     // Only for SLAVE modules
     void sendResponse(sensor::BufferData_t *buffer, u8 reqMsg)
     {
-        u8 message[3]; // Payload
+        /**
+         * @brief Payload of the response. First byte is request code echo,
+         * then 2 bytes of response, MSB-order.
+         */
+        u8 message[3];
         u16 bufferValue;
 
         switch (DATAID_MASK(reqMsg))
@@ -61,12 +65,10 @@ namespace lora
             break;
         }
 
-        // Split 16-bit field into 2x 8-bit with bit masking
-        message[0] = (bufferValue & UPPER_BITMASK) >> 8;
-        message[1] = (bufferValue & LOWER_BITMASK);
-        message[2] = reqMsg; // Request message is part of response
-
-        debug::println(debug::INFO, "Sending response: " + String(message[0]) + "\t" + String(message[1]) + "\t0x" + String(message[2], HEX));
+        message[0] = reqMsg;
+        message[1] = (bufferValue & UPPER_BITMASK) >> 8;
+        message[2] = (bufferValue & LOWER_BITMASK);
+        debug::println(debug::INFO, "Sending response: 0x" + String(message[0], HEX) + "\t" + String(message[1]) + "\t" + String(message[2]));
 
         loraRadio.write(message, sizeof(message));
     }
@@ -74,22 +76,22 @@ namespace lora
     // Only for MASTER module
     void readResponse(ReceivedData_t *data, u8 message[])
     {
-        u8 boardId = BOARDID_MASK(message[2]) - 1;
+        u8 boardId = BOARDID_MASK(message[0]) - 1;
         // Merge each 2x 8-bit fields into 1x 16-bit one, fix magnitudes
-        switch (DATAID_MASK(message[2]))
+        switch (DATAID_MASK(message[0]))
         {
         case TEMPERATURE:
-            data->temperature[boardId] = (f32)((message[0] << 8) + message[1]) / 100;
+            data->temperature[boardId] = (f32)((message[1] << 8) + message[2]) / 100;
             break;
 
         case PRESSURE:
-            data->pressure[boardId] = (f32)((message[0] << 8) + message[1]);
+            data->pressure[boardId] = (f32)((message[1] << 8) + message[2]);
             break;
 
         case HUMIDITY:
-            data->humidity[boardId] = (f32)((message[0] << 8) + message[1]) / 100;
+            data->humidity[boardId] = (f32)((message[1] << 8) + message[2]) / 100;
             break;
         }
-        memset(message, 0, 3); // TODO: Actually needed?
+        // memset(message, 0, 3); // TODO: Actually needed?
     }
 }
