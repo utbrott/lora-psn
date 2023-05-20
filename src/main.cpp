@@ -125,6 +125,7 @@ void buttonPress_handler(void)
 
 void updateRequest_handler(void)
 {
+    debug::println(debug::INFO, "Found request: 0x" + String(updateRequestMsg[0], HEX));
     if (BOARDID_MASK(updateRequestMsg[0]) != BOARD_ID)
     {
         digitalWrite(LED_BUILTIN, 0);
