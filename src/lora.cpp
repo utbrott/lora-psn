@@ -66,7 +66,8 @@ namespace lora
         message[1] = (bufferValue & LOWER_BITMASK);
         message[2] = reqMsg; // Request message is part of response
 
-        debug::println(debug::INFO, "Sending response");
+        debug::println(debug::INFO, "Sending response: " + String(message[0]) + "\t" + String(message[1]) + "\t0x" + String(message[2], HEX));
+
         loraRadio.write(message, sizeof(message));
     }
 

@@ -18,7 +18,7 @@ namespace debug
     } MsgType_t;
 
     /**
-     * @brief Prints out a debug message over Serial
+     * @brief Prints out a debug message line over Serial
      *
      * @param type: Debug message type @ref MsgType_t
      * @param msg: Message string
