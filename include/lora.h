@@ -11,7 +11,7 @@
 #define UART1_RX PA10
 #define UART1_TX PA9
 #define ARRAYSIZE(n) (sizeof(n) / sizeof(n[0]))
-#define DEFUALT_BOARD_ID 0x00
+#define DEFAULT_BOARD_ID 0x00
 
 namespace lora
 {
@@ -47,7 +47,7 @@ namespace lora
      * @param   boardId: Board ID, hex value from 0x00 to 0x0f
      * @note    Also performs BME280 sensor init if board is specified as SLAVE
      */
-    void shieldInit(BoardType_t boardType, u8 boardId = DEFUALT_BOARD_ID);
+    void shieldInit(BoardType_t boardType, u8 boardId = DEFAULT_BOARD_ID);
 
     /**
      * @brief   Sends data request
