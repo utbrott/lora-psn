@@ -30,6 +30,7 @@ u8 next = 0;
 u8 boardBtnPressed = 0;
 u8 newDataRequest = 0;
 
+void transmitData(lora::ReceivedData_t *data_ptr);
 void setup()
 {
     Serial.begin(115200);
@@ -63,6 +64,9 @@ void setup()
             }
         }
 
+        Wire.setSDA(I2C1_SDA);
+        Wire.setSCL(I2C1_SCL);
+        Wire.begin();
         attachInterrupt(digitalPinToInterrupt(BOARD_BTN),
                         buttonPress_handler, RISING);
 
@@ -139,6 +143,7 @@ void masterNewFetch_handler(void)
     }
 
     logReceivedData();
+    transmitData(&receivedData);
 }
 
 void fetchDataUpdate(u8 requestCode)
@@ -195,4 +200,25 @@ void logReceivedData(void)
         Serial.print("\t");
     }
     Serial.println();
+}
+void transmitData(lora::ReceivedData_t *data_ptr)
+{
+    Wire.beginTransmission(I2C_ADDR);
+    for (u8 i = 0; i < 3; ++i)
+    {
+        Wire.write((u16)data_ptr->temperature[i]);
+    }
+    Wire.write("\n");
+
+    for (u8 i = 0; i < 3; ++i)
+    {
+        Wire.write((u16)data_ptr->pressure[i]);
+    }
+    Wire.write("\n");
+    for (u8 i = 0; i < 3; ++i)
+    {
+        Wire.write((u16)data_ptr->humidity[i]);
+    }
+    Wire.write("\n");
+    Wire.endTransmission();
 }
