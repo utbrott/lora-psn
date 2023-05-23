@@ -12,6 +12,9 @@
 
 #define BOARD_BTN PC13
 #define SLAVE_INTERRUPT_PIN PB3
+#define I2C1_SDA PB9
+#define I2C1_SCL PB8
+#define I2C_ADDR 0x04
 #define TIMEOUT_MS 1500
 
 /**
@@ -89,3 +92,4 @@ extern void fetchDataUpdate(u8 requestCode);
 // Temporary
 extern void logReceivedData(void);
 
+#endif /* MAIN_H */
