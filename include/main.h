@@ -14,7 +14,9 @@
 #define SLAVE_INTERRUPT_PIN PB3
 #define I2C1_SDA PB9
 #define I2C1_SCL PB8
-#define I2C_ADDR 0x04
+#ifndef I2C_ADDR
+#define I2C_ADDR 0x31
+#endif
 #define TIMEOUT_MS 1500
 
 /**

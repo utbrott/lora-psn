@@ -31,6 +31,8 @@ u8 boardBtnPressed = 0;
 u8 newDataRequest = 0;
 
 void transmitData(lora::ReceivedData_t *data_ptr);
+void i2cScan(void);
+
 void setup()
 {
     Serial.begin(115200);
@@ -145,6 +147,7 @@ void masterNewFetch_handler(void)
 
     logReceivedData();
     transmitData(&receivedData);
+    // i2cScan();
 }
 
 void fetchDataUpdate(u8 requestCode)
@@ -177,7 +180,7 @@ void fetchDataUpdate(u8 requestCode)
 
 void logReceivedData(void)
 {
-    Serial.println("\n");
+    Serial.println();
     debug::println(debug::INFO, "Fetched data:");
 
     Serial.print("Temperature:\t");
@@ -204,24 +207,61 @@ void logReceivedData(void)
     }
     Serial.println();
 }
+
 void transmitData(lora::ReceivedData_t *data_ptr)
 {
+    debug::println(debug::INFO, "I2C Transmission");
     Wire.beginTransmission(I2C_ADDR);
+    char str_buf[50];
     for (u8 i = 0; i < 3; ++i)
     {
-        Wire.write((u16)data_ptr->temperature[i]);
+        sprintf(str_buf, "%i\t", (u16)(data_ptr->temperature[i] * 100.0f));
+        Wire.write(str_buf);
     }
     Wire.write("\n");
 
     for (u8 i = 0; i < 3; ++i)
     {
-        Wire.write((u16)data_ptr->pressure[i]);
+        sprintf(str_buf, "%i\t", (u16)(data_ptr->pressure[i]));
+        Wire.write(str_buf);
     }
     Wire.write("\n");
+
     for (u8 i = 0; i < 3; ++i)
     {
-        Wire.write((u16)data_ptr->humidity[i]);
+        sprintf(str_buf, "%i\t", (u16)(data_ptr->humidity[i] * 100.0f));
+        Wire.write(str_buf);
     }
     Wire.write("\n");
+
     Wire.endTransmission();
+    debug::println(debug::INFO, "Done");
+}
+
+/* TODO: Remove */
+void i2cScan(void)
+{
+    byte error, addr;
+    debug::println(debug::INFO, "Scanning I2C");
+    for (addr = 1; addr < 0x7f; ++addr)
+    {
+        Wire.beginTransmission(addr);
+        error = Wire.endTransmission();
+
+        if (error == 0)
+        {
+            Serial.print("found device at 0x");
+            if (addr < 0x0f)
+                Serial.print("0");
+            Serial.println(addr, HEX);
+            Wire.write(byte(0x00));
+        }
+        else if (error == 4)
+        {
+            Serial.print("Unknown err at 0x");
+            if (addr < 0x0f)
+                Serial.print("0");
+            Serial.println(addr, HEX);
+        }
+    }
 }
