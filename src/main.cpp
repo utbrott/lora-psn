@@ -184,7 +184,7 @@ void logReceivedData(void)
     debug::println(debug::INFO, "Fetched data:");
 
     Serial.print("Temperature:\t");
-    for (int i = 0; i < 3; ++i)
+    for (int i = 0; i < SLAVE_COUNT; ++i)
     {
         Serial.print(receivedData.temperature[i]);
         Serial.print("\t");
@@ -192,7 +192,7 @@ void logReceivedData(void)
     Serial.println();
 
     Serial.print("Pressure:\t");
-    for (int i = 0; i < 3; ++i)
+    for (int i = 0; i < SLAVE_COUNT; ++i)
     {
         Serial.print(receivedData.pressure[i]);
         Serial.print("\t");
@@ -200,7 +200,7 @@ void logReceivedData(void)
     Serial.println();
 
     Serial.print("Humidity:\t");
-    for (int i = 0; i < 3; ++i)
+    for (int i = 0; i < SLAVE_COUNT; ++i)
     {
         Serial.print(receivedData.humidity[i]);
         Serial.print("\t");
@@ -213,21 +213,21 @@ void transmitData(lora::ReceivedData_t *data_ptr)
     debug::println(debug::INFO, "I2C Transmission");
     Wire.beginTransmission(I2C_ADDR);
     char str_buf[50];
-    for (u8 i = 0; i < 3; ++i)
+    for (u8 i = 0; i < SLAVE_COUNT; ++i)
     {
         sprintf(str_buf, "%i\t", (u16)(data_ptr->temperature[i] * 100.0f));
         Wire.write(str_buf);
     }
     Wire.write("\n");
 
-    for (u8 i = 0; i < 3; ++i)
+    for (u8 i = 0; i < SLAVE_COUNT; ++i)
     {
         sprintf(str_buf, "%i\t", (u16)(data_ptr->pressure[i]));
         Wire.write(str_buf);
     }
     Wire.write("\n");
 
-    for (u8 i = 0; i < 3; ++i)
+    for (u8 i = 0; i < SLAVE_COUNT; ++i)
     {
         sprintf(str_buf, "%i\t", (u16)(data_ptr->humidity[i] * 100.0f));
         Wire.write(str_buf);

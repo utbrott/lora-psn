@@ -18,6 +18,7 @@
 #define I2C_ADDR 0x31
 #endif
 #define TIMEOUT_MS 1500
+#define SLAVE_COUNT 3
 
 /**
  * @brief Raw data read by the BME280 sensor
