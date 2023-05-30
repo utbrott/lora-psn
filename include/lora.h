@@ -10,7 +10,6 @@
 
 #define UART1_RX PA10
 #define UART1_TX PA9
-#define ARRAYSIZE(n) (sizeof(n) / sizeof(n[0]))
 #define DEFAULT_BOARD_ID 0x00
 
 namespace lora
