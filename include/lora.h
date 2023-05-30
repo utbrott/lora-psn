@@ -47,7 +47,7 @@ namespace lora
      * @param   boardId: Board ID, hex value from 0x00 to 0x0f
      * @note    Also performs BME280 sensor init if board is specified as SLAVE
      */
-    void shieldInit(BoardType_t boardType, u8 boardId = DEFAULT_BOARD_ID);
+    void shieldInit(BoardType_t boardType, u8 _sf, u8 boardId = DEFAULT_BOARD_ID);
 
     /**
      * @brief   Sends data request

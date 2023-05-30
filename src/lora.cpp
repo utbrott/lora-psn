@@ -10,7 +10,7 @@ HardwareSerial SerialLora(UART1_RX, UART1_TX);
 namespace lora
 {
 
-    void shieldInit(BoardType_t type, u8 boardId)
+    void shieldInit(BoardType_t type, u8 _sf, u8 boardId)
     {
         switch (type)
         {
@@ -29,7 +29,7 @@ namespace lora
             delay(1000); // Give the module 1s to init
         }
 
-        loraRadio.setSpreadingFactor(12);
+        loraRadio.setSpreadingFactor(_sf);
 
         debug::println(debug::INFO, "Shield ready!");
     }

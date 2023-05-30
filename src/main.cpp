@@ -7,6 +7,9 @@
 #ifndef BOARD_ID
 #define BOARD_ID 0x00
 #endif
+#ifndef SPREADFACTOR
+#define SPREADFACTOR 7
+#endif
 
 // Set PERIOD_MS based on BOARD_ID
 #if BOARD_ID == 0x00
@@ -36,7 +39,7 @@ void i2cScan(void);
 void setup()
 {
     Serial.begin(115200);
-    lora::shieldInit(BOARD_TYPE, BOARD_ID);
+    lora::shieldInit(BOARD_TYPE, SPREADFACTOR, BOARD_ID);
 
     switch (BOARD_TYPE)
     {
@@ -236,32 +239,4 @@ void transmitData(lora::ReceivedData_t *data_ptr)
 
     Wire.endTransmission();
     debug::println(debug::INFO, "Done");
-}
-
-/* TODO: Remove */
-void i2cScan(void)
-{
-    byte error, addr;
-    debug::println(debug::INFO, "Scanning I2C");
-    for (addr = 1; addr < 0x7f; ++addr)
-    {
-        Wire.beginTransmission(addr);
-        error = Wire.endTransmission();
-
-        if (error == 0)
-        {
-            Serial.print("found device at 0x");
-            if (addr < 0x0f)
-                Serial.print("0");
-            Serial.println(addr, HEX);
-            Wire.write(byte(0x00));
-        }
-        else if (error == 4)
-        {
-            Serial.print("Unknown err at 0x");
-            if (addr < 0x0f)
-                Serial.print("0");
-            Serial.println(addr, HEX);
-        }
-    }
 }
