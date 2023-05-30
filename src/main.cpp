@@ -10,7 +10,7 @@
 
 // Set PERIOD_MS based on BOARD_ID
 #if BOARD_ID == 0x00
-#define PERIOD_MS 2 * 60000 // (milliseconds) between new requests
+#define PERIOD_MS 30000 // (milliseconds) between new requests
 #else
 #define PERIOD_MS 5000 // (milliseconds) between new measurements
 #endif

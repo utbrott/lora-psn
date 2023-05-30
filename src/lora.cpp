@@ -29,6 +29,8 @@ namespace lora
             delay(1000); // Give the module 1s to init
         }
 
+        loraRadio.setSpreadingFactor(12);
+
         debug::println(debug::INFO, "Shield ready!");
     }
 
