@@ -50,8 +50,6 @@ namespace sensor
      */
     void readRaw(void);
 
-    // bool compareValues(RawData_t *current, RawData_t *measured);
-
     /**
      * @brief Updates data buffer with rolling average values
      * @param buffer Data buffer to update (reference)

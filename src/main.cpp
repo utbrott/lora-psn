@@ -18,7 +18,6 @@
 #define PERIOD_MS 5000 // (milliseconds) between new measurements
 #endif
 
-// sensor::RawData_t sensorRaw = {0.0, 0.0, 0.0};
 sensor::BufferData_t sensorBuffer = {0, 0, 0};
 
 lora::ReceivedData_t receivedData = {{0.0, 0.0, 0.0}, {0.0, 0.0, 0.0}, {0.0, 0.0, 0.0}};
@@ -29,9 +28,6 @@ u8 requestCode[sizeof(slaveId) * sizeof(dataId)];
 
 u32 timer = 0;
 u8 next = 0;
-
-u8 boardBtnPressed = 0;
-u8 newDataRequest = 0;
 
 void transmitData(lora::ReceivedData_t *data_ptr);
 
@@ -125,7 +121,6 @@ void buttonPress_handler(void)
 
 void updateRequest_handler(void)
 {
-    debug::println(debug::INFO, "Found request: 0x" + String(updateRequestMsg[0], HEX));
     if (BOARDID_MASK(updateRequestMsg[0]) != BOARD_ID)
     {
         digitalWrite(LED_BUILTIN, 0);
@@ -145,7 +140,6 @@ void masterNewFetch_handler(void)
 
     logReceivedData();
     transmitData(&receivedData);
-    // i2cScan();
 }
 
 void fetchDataUpdate(u8 requestCode)
@@ -154,13 +148,12 @@ void fetchDataUpdate(u8 requestCode)
 
     // If MASTER waits 500ms for response, treat fetch as failed
     u32 timeout = millis();
-
     while (!(loraRadio.read(receivedMsg) > 0))
     {
         if ((millis() - timeout) >= TIMEOUT_MS)
         {
             timeout = millis();
-            debug::println(debug::ERR, "Request 0x" + String(requestCode, HEX) + " timed out.");
+            debug::println(debug::ERR, "Request 0x" + String(requestCode, HEX) + " failed: TIME OUT.");
             return;
         }
     }
@@ -168,7 +161,7 @@ void fetchDataUpdate(u8 requestCode)
     // No timeout, check response code matches request code
     if (receivedMsg[0] != requestCode)
     {
-        debug::println(debug::ERR, "Fetch failed, response did not match.");
+        debug::println(debug::ERR, "Request 0x" + String(requestCode, HEX) + " failed: BAD RESPONSE");
         return;
     }
 
@@ -176,6 +169,7 @@ void fetchDataUpdate(u8 requestCode)
     delay(100); // 100ms blocking delay between requests
 }
 
+/* FIX ME */
 void logReceivedData(void)
 {
     Serial.println();
@@ -206,6 +200,7 @@ void logReceivedData(void)
     Serial.println();
 }
 
+/* FIX ME */
 void transmitData(lora::ReceivedData_t *data_ptr)
 {
     debug::println(debug::INFO, "I2C Transmission");

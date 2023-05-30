@@ -51,11 +51,6 @@ extern u8 updateRequestMsg[1];
 extern u8 receivedMsg[64];
 
 /**
- * @brief Flag to hold current button interrupt state value
- */
-extern u8 boardBtnPressed;
-
-/**
  * @brief Time keeping variable
  * @note for MASTER - time between new requests in network
  * @note for SLAVE - time between taking new measurements
@@ -91,6 +86,12 @@ extern void masterNewFetch_handler(void);
  * @param requestCode Request code built from SLAVE Id and DATA Id
  */
 extern void fetchDataUpdate(u8 requestCode);
+
+/**
+ * @brief Transmits data from buffer over I2C to Webserver
+ * @param data_ptr pointer to data received by MASTER
+ */
+extern void transmitData(lora::ReceivedData_t *data_ptr);
 
 // Temporary
 extern void logReceivedData(void);
