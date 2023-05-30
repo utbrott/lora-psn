@@ -23,13 +23,13 @@ sensor::BufferData_t sensorBuffer = {0, 0, 0};
 lora::ReceivedData_t receivedData = {{0.0, 0.0, 0.0}, {0.0, 0.0, 0.0}, {0.0, 0.0, 0.0}};
 u8 updateRequestMsg[1]; // SLAVE only
 u8 receivedMsg[64];     // MASTER only
+u8 totalRequests[SLAVE_COUNT] = {0, 0, 0};
+u8 failedRequests[SLAVE_COUNT] = {0, 0, 0};
 
 u8 requestCode[sizeof(slaveId) * sizeof(dataId)];
 
 u32 timer = 0;
 u8 next = 0;
-
-void transmitData(lora::ReceivedData_t *data_ptr);
 
 void setup()
 {
@@ -87,7 +87,6 @@ void loop()
             digitalWrite(LED_BUILTIN, 1);
         }
 
-        sensor::RawData_t measured;
         if (next)
         {
             sensor::readRaw();
@@ -145,6 +144,7 @@ void masterNewFetch_handler(void)
 void fetchDataUpdate(u8 requestCode)
 {
     lora::sendRequest(requestCode);
+    totalRequests[(BOARDID_MASK(requestCode)) - 1] += 1;
 
     // If MASTER waits 500ms for response, treat fetch as failed
     u32 timeout = millis();
@@ -154,6 +154,7 @@ void fetchDataUpdate(u8 requestCode)
         {
             timeout = millis();
             debug::println(debug::ERR, "Request 0x" + String(requestCode, HEX) + " failed: TIME OUT.");
+            failedRequests[(BOARDID_MASK(requestCode)) - 1] += 1;
             return;
         }
     }
@@ -162,6 +163,7 @@ void fetchDataUpdate(u8 requestCode)
     if (receivedMsg[0] != requestCode)
     {
         debug::println(debug::ERR, "Request 0x" + String(requestCode, HEX) + " failed: BAD RESPONSE");
+        failedRequests[(BOARDID_MASK(requestCode)) - 1] += 1;
         return;
     }
 
@@ -198,6 +200,33 @@ void logReceivedData(void)
         Serial.print("\t");
     }
     Serial.println();
+
+    Serial.print("Total:\t\t");
+    for (int i = 0; i < SLAVE_COUNT; ++i)
+    {
+        Serial.print(totalRequests[i]);
+        Serial.print("\t");
+    }
+    Serial.println();
+
+    Serial.print("Failed:\t\t");
+    for (int i = 0; i < SLAVE_COUNT; ++i)
+    {
+        Serial.print(failedRequests[i]);
+        Serial.print("\t");
+    }
+    Serial.println();
+
+    // There is a bug here?
+    Serial.print("Failed%:\t");
+    f32 failedPercent[SLAVE_COUNT];
+    for (int i = 0; i < SLAVE_COUNT; ++i)
+    {
+        failedPercent[i] = (f32)((failedRequests[i] / totalRequests[i]));
+        Serial.print(String(failedPercent[i]));
+        Serial.print("\t");
+    }
+    Serial.println();
 }
 
 /* FIX ME */
@@ -226,7 +255,5 @@ void transmitData(lora::ReceivedData_t *data_ptr)
         Wire.write(str_buf);
     }
     Wire.write("\n");
-
     Wire.endTransmission();
-    debug::println(debug::INFO, "Done");
 }

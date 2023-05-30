@@ -39,6 +39,16 @@ static const char slaveId[] = {0x01, 0x02, 0x03};
 static const char dataId[] = {0x10, 0x20, 0x30};
 
 /**
+ * @brief Counter for total requests
+ */
+extern u8 totalRequests[SLAVE_COUNT];
+
+/**
+ * @brief Counter for failed requests
+ */
+extern u8 failedRequests[SLAVE_COUNT];
+
+/**
  * @brief Data update request message sent by MASTER module and
  * received by SLAVE module. Contains board ID which should respond
  * and data ID which should be sent.
@@ -93,7 +103,6 @@ extern void fetchDataUpdate(u8 requestCode);
  */
 extern void transmitData(lora::ReceivedData_t *data_ptr);
 
-// Temporary
 extern void logReceivedData(void);
 
 #endif /* MAIN_H */
