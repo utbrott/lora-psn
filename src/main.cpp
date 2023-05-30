@@ -18,7 +18,7 @@
 #define PERIOD_MS 5000 // (milliseconds) between new measurements
 #endif
 
-sensor::RawData_t sensorRaw = {0.0, 0.0, 0.0};
+// sensor::RawData_t sensorRaw = {0.0, 0.0, 0.0};
 sensor::BufferData_t sensorBuffer = {0, 0, 0};
 
 lora::ReceivedData_t receivedData = {{0.0, 0.0, 0.0}, {0.0, 0.0, 0.0}, {0.0, 0.0, 0.0}};
@@ -45,8 +45,8 @@ void setup()
     case lora::SLAVE:
     {
         sensor::init();
-        sensor::readRaw(&sensorRaw);
-        sensor::updateBuffer(&sensorBuffer, &sensorRaw);
+        sensor::readRaw();
+        sensor::updateBuffer(&sensorBuffer);
 
         pinMode(LED_BUILTIN, OUTPUT);
         digitalWrite(LED_BUILTIN, 0);
@@ -94,15 +94,10 @@ void loop()
         sensor::RawData_t measured;
         if (next)
         {
-            sensor::readRaw(&measured);
+            sensor::readRaw();
+            sensor::updateBuffer(&sensorBuffer);
             timer = millis();
             INVERT(next);
-        }
-
-        if (sensor::compareValues(&sensorRaw, &measured))
-        {
-            sensor::updateBuffer(&sensorBuffer, &sensorRaw);
-            debug::println(debug::INFO, "Data changed, updating buffer");
         }
         break;
 

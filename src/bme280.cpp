@@ -1,6 +1,9 @@
 #include "bme280.h"
 
 Adafruit_BME280 bme;
+RollingAvg temperatureAvg(MEASURE_NUM);
+RollingAvg pressureAvg(MEASURE_NUM);
+RollingAvg humidityAvg(MEASURE_NUM);
 
 namespace sensor
 {
@@ -21,55 +24,62 @@ namespace sensor
         }
 
         debug::println(debug::INFO, "BME280 sensor connected.");
+
+        // Explicit clear RAs
+        temperatureAvg.clear();
+        pressureAvg.clear();
+        humidityAvg.clear();
     }
 
-    void readRaw(RawData_t *data)
+    void readRaw(void)
     {
-        data->temperature = bme.readTemperature();
-        data->pressure = (bme.readPressure());
-        data->humidity = bme.readHumidity();
+        temperatureAvg.addValue(bme.readTemperature());
+        pressureAvg.addValue(bme.readPressure());
+        humidityAvg.addValue(bme.readHumidity());
     }
 
-    bool compareValues(RawData_t *current, RawData_t *measured)
+    // NO LONGER NEEDED
+    // bool compareValues(RawData_t *current, RawData_t *measured)
+    // {
+    //     // Get relative diff between current and measured
+    //     u16 temperatureDiff = abs(measured->temperature - current->temperature);
+    //     u16 pressureDiff = abs(measured->pressure - current->pressure);
+    //     u16 humidityDiff = abs(measured->humidity - current->humidity);
+
+    //     bool didChange = false;
+
+    //     // Temperature: update if changed by more than 0.5 deg C
+    //     if (temperatureDiff > 0.5)
+    //     {
+    //         current->temperature = measured->temperature;
+    //         didChange = true;
+    //     }
+
+    //     // Pressure: update if changed by more than 1hPa
+    //     if (pressureDiff > 100)
+    //     {
+    //         current->pressure = measured->pressure;
+    //         didChange = true;
+    //     }
+
+    //     // Humidity: update if changed by more than 0.5%
+    //     if (humidityDiff > 0.5)
+    //     {
+    //         current->humidity = measured->humidity;
+    //         didChange = true;
+    //     }
+
+    //     return didChange;
+    // }
+
+    void updateBuffer(BufferData_t *buffer)
     {
-        // Get relative diff between current and measured
-        u16 temperatureDiff = abs(measured->temperature - current->temperature);
-        u16 pressureDiff = abs(measured->pressure - current->pressure);
-        u16 humidityDiff = abs(measured->humidity - current->humidity);
+        buffer->temperature = (u16)(temperatureAvg.getAverage() * 100.0f);
+        buffer->pressure = (u16)(pressureAvg.getAverage() / 100.0f);
+        buffer->humidity = (u16)(humidityAvg.getAverage() * 100.0f);
 
-        bool didChange = false;
-
-        // Temperature: update if changed by more than 0.5 deg C
-        if (temperatureDiff > 0.5)
-        {
-            current->temperature = measured->temperature;
-            didChange = true;
-        }
-
-        // Pressure: update if changed by more than 1hPa
-        if (pressureDiff > 100)
-        {
-            current->pressure = measured->pressure;
-            didChange = true;
-        }
-
-        // Humidity: update if changed by more than 0.5%
-        if (humidityDiff > 0.5)
-        {
-            current->humidity = measured->humidity;
-            didChange = true;
-        }
-
-        return didChange;
-    }
-
-    void updateBuffer(BufferData_t *buffer, RawData_t *raw)
-    {
-        buffer->temperature = (u16)(raw->temperature * 100.0f);
-        buffer->pressure = (u16)(raw->pressure / 100.0f);
-        buffer->humidity = (u16)(raw->humidity * 100.0f);
-
-        String values = "\n" + String(buffer->temperature) + " " + String(buffer->pressure) + " " + String(buffer->humidity);
+        /* REMOVE ME*/
+        String values = "Values in buffer" + String(buffer->temperature) + " " + String(buffer->pressure) + " " + String(buffer->humidity);
         Serial.println(values);
     }
 }

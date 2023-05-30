@@ -6,14 +6,17 @@
 #include <Wire.h>
 #include <Adafruit_BME280.h>
 #include <Adafruit_Sensor.h>
-
 #include "globals.h"
 #include "debug.h"
+#include "rollingavg.h"
 
 #define SDA_PIN PB7
 #define SCL_PIN PB6
 #define SENSOR_ADDR 0x77
 
+#define AVG_PERIOD 60
+#define MEASURE_PERIOD 5
+#define MEASURE_NUM (AVG_PERIOD / MEASURE_PERIOD)
 namespace sensor
 {
     /**
@@ -43,14 +46,17 @@ namespace sensor
     void init(void);
 
     /**
-     * @brief Reads raw data from the sensor
-     * @param *data: data from the sensor
+     * @brief Reads raw data from the sensor and adds values to rolling avg
      */
-    void readRaw(RawData_t *sensorData);
+    void readRaw(void);
 
-    bool compareValues(RawData_t *current, RawData_t *measured);
+    // bool compareValues(RawData_t *current, RawData_t *measured);
 
-    void updateBuffer(BufferData_t *buffer, RawData_t *raw);
+    /**
+     * @brief Updates data buffer with rolling average values
+     * @param buffer Data buffer to update (reference)
+     */
+    void updateBuffer(BufferData_t *buffer);
 }
 
 #endif /* BME280_SENSOR_H */
