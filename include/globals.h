@@ -5,6 +5,7 @@
 
 #define DATAID_MASK(req) (req & 0xf0)
 #define BOARDID_MASK(req) (req & 0x0f)
+#define ARRAYSIZE(x) (sizeof(x) / sizeof(x[0]))
 
 /**
  * @defgroup    Global_Typedef
