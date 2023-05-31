@@ -107,4 +107,7 @@ extern void logReceivedData(lora::ReceivedData *data);
 template <typename T, size_t size>
 extern void logValues(const T (&array)[size]);
 
+template <typename T, size_t size>
+extern void transmitPacket(const T (&array)[size], f32 modifier = 1.0f);
+
 #endif /* MAIN_H */

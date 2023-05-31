@@ -224,30 +224,26 @@ void logReceivedData(lora::ReceivedData *data)
     Serial.println();
 }
 
+template <typename T, size_t size>
+void transmitPacket(const T (&array)[size], f32 modifier)
+{
+    char packet[50];
+    for (T item : array)
+    {
+        sprintf(packet, "%i\t", (u16)(item * modifier));
+        Wire.write(packet);
+    }
+    Wire.write("\n");
+}
+
 void webserverTransmit(lora::ReceivedData *data)
 {
     debug::println(debug::INFO, "Sending to webserver\n");
     Wire.beginTransmission(I2C_ADDR);
-    char str_buf[50];
-    for (u8 i = 0; i < SLAVE_COUNT; ++i)
-    {
-        sprintf(str_buf, "%i\t", (u16)(data->temperature[i] * 100.0f));
-        Wire.write(str_buf);
-    }
-    Wire.write("\n");
 
-    for (u8 i = 0; i < SLAVE_COUNT; ++i)
-    {
-        sprintf(str_buf, "%i\t", (u16)(data->pressure[i]));
-        Wire.write(str_buf);
-    }
-    Wire.write("\n");
+    transmitPacket(data->temperature, 100.0f);
+    transmitPacket(data->pressure);
+    transmitPacket(data->humidity, 100.0f);
 
-    for (u8 i = 0; i < SLAVE_COUNT; ++i)
-    {
-        sprintf(str_buf, "%i\t", (u16)(data->humidity[i] * 100.0f));
-        Wire.write(str_buf);
-    }
-    Wire.write("\n");
     Wire.endTransmission();
 }
