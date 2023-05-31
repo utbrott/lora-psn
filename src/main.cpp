@@ -20,7 +20,7 @@
 
 sensor::BufferData_t sensorBuffer = {0, 0, 0};
 
-lora::ReceivedData_t receivedData = {{0.0, 0.0, 0.0}, {0.0, 0.0, 0.0}, {0.0, 0.0, 0.0}};
+lora::ReceivedData receivedData = {{0.0, 0.0, 0.0}, {0.0, 0.0, 0.0}, {0.0, 0.0, 0.0}};
 u8 updateRequestMsg[1]; // SLAVE only
 u8 receivedMsg[64];     // MASTER only
 u8 totalRequests[SLAVE_COUNT] = {0, 0, 0};
@@ -137,8 +137,14 @@ void masterNewFetch_handler(void)
         fetchDataUpdate(requestCode[itr]);
     }
 
-    logReceivedData();
-    transmitData(&receivedData);
+    // Calculate percent of failed requests
+    // for (size_t i; i < ARRAYSIZE(failedPercent); ++i)
+    // {
+    //     failedPercent[i] = ((f32)failedRequests[i] / (f32)totalRequests[i]) * 100.0f;
+    // }
+
+    logReceivedData(&receivedData);
+    webserverTransmit(&receivedData);
 }
 
 void fetchDataUpdate(u8 requestCode)
@@ -171,38 +177,40 @@ void fetchDataUpdate(u8 requestCode)
     delay(100); // 100ms blocking delay between requests
 }
 
-/* FIX ME */
-void logReceivedData(void)
+void logReceivedData(lora::ReceivedData *data)
 {
     Serial.println();
     debug::println(debug::INFO, "Fetched data:");
 
     Serial.print("Temperature:\t");
-    for (int i = 0; i < SLAVE_COUNT; ++i)
+    for (size_t i = 0; i < ARRAYSIZE(data->temperature); ++i)
     {
-        Serial.print(receivedData.temperature[i]);
+        Serial.print(data->temperature[i]);
         Serial.print("\t");
     }
     Serial.println();
 
     Serial.print("Pressure:\t");
-    for (int i = 0; i < SLAVE_COUNT; ++i)
+    for (size_t i = 0; i < ARRAYSIZE(data->pressure); ++i)
     {
-        Serial.print(receivedData.pressure[i]);
+        Serial.print(data->pressure[i]);
         Serial.print("\t");
     }
     Serial.println();
 
     Serial.print("Humidity:\t");
-    for (int i = 0; i < SLAVE_COUNT; ++i)
+    for (size_t i = 0; i < ARRAYSIZE(data->humidity); ++i)
     {
-        Serial.print(receivedData.humidity[i]);
+        Serial.print(data->humidity[i]);
         Serial.print("\t");
     }
     Serial.println();
 
+    Serial.println();
+    debug::println(debug::INFO, "Requests statistics:");
+
     Serial.print("Total:\t\t");
-    for (int i = 0; i < SLAVE_COUNT; ++i)
+    for (size_t i = 0; i < ARRAYSIZE(totalRequests); ++i)
     {
         Serial.print(totalRequests[i]);
         Serial.print("\t");
@@ -210,48 +218,46 @@ void logReceivedData(void)
     Serial.println();
 
     Serial.print("Failed:\t\t");
-    for (int i = 0; i < SLAVE_COUNT; ++i)
+    for (size_t i = 0; i < ARRAYSIZE(failedRequests); ++i)
     {
         Serial.print(failedRequests[i]);
         Serial.print("\t");
     }
     Serial.println();
 
-    // There is a bug here?
     Serial.print("Failed%:\t");
-    f32 failedPercent[SLAVE_COUNT];
-    for (int i = 0; i < SLAVE_COUNT; ++i)
+    for (size_t i = 0; i < ARRAYSIZE(totalRequests); ++i)
     {
-        failedPercent[i] = ((f32)failedRequests[i] / (f32)totalRequests[i]) * 100.0f;
-        Serial.print(String(failedPercent[i]));
+        f32 failedPercent = ((f32)failedRequests[i] / (f32)totalRequests[i]) * 100.0f;
+        Serial.print(failedPercent);
         Serial.print("\t");
     }
     Serial.println();
+    Serial.println();
 }
 
-/* FIX ME */
-void transmitData(lora::ReceivedData_t *data_ptr)
+void webserverTransmit(lora::ReceivedData *data)
 {
-    debug::println(debug::INFO, "I2C Transmission");
+    debug::println(debug::INFO, "Sending to webserver\n");
     Wire.beginTransmission(I2C_ADDR);
     char str_buf[50];
     for (u8 i = 0; i < SLAVE_COUNT; ++i)
     {
-        sprintf(str_buf, "%i\t", (u16)(data_ptr->temperature[i] * 100.0f));
+        sprintf(str_buf, "%i\t", (u16)(data->temperature[i] * 100.0f));
         Wire.write(str_buf);
     }
     Wire.write("\n");
 
     for (u8 i = 0; i < SLAVE_COUNT; ++i)
     {
-        sprintf(str_buf, "%i\t", (u16)(data_ptr->pressure[i]));
+        sprintf(str_buf, "%i\t", (u16)(data->pressure[i]));
         Wire.write(str_buf);
     }
     Wire.write("\n");
 
     for (u8 i = 0; i < SLAVE_COUNT; ++i)
     {
-        sprintf(str_buf, "%i\t", (u16)(data_ptr->humidity[i] * 100.0f));
+        sprintf(str_buf, "%i\t", (u16)(data->humidity[i] * 100.0f));
         Wire.write(str_buf);
     }
     Wire.write("\n");

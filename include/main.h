@@ -21,11 +21,6 @@
 #define SLAVE_COUNT 3
 
 /**
- * @brief Raw data read by the BME280 sensor
- */
-extern sensor::RawData_t sensorRaw;
-
-/**
  * @brief Formatted data from sensor, ready for sending
  */
 extern sensor::BufferData_t sensorBuffer;
@@ -33,7 +28,7 @@ extern sensor::BufferData_t sensorBuffer;
 /**
  * @brief Data received from the LoRa message
  */
-extern lora::ReceivedData_t receivedData;
+extern lora::ReceivedData receivedData;
 
 static const char slaveId[] = {0x01, 0x02, 0x03};
 static const char dataId[] = {0x10, 0x20, 0x30};
@@ -98,11 +93,15 @@ extern void masterNewFetch_handler(void);
 extern void fetchDataUpdate(u8 requestCode);
 
 /**
- * @brief Transmits data from buffer over I2C to Webserver
- * @param data_ptr pointer to data received by MASTER
+ * @brief Transmits data from buffer over I2C to Webserver module
+ * @param data pointer to data received by MASTER
  */
-extern void transmitData(lora::ReceivedData_t *data_ptr);
+extern void webserverTransmit(lora::ReceivedData *data);
 
-extern void logReceivedData(void);
+/**
+ * @brief Logs data from buffer
+ * @param data pointer to data received by MASTER
+ */
+extern void logReceivedData(lora::ReceivedData *data);
 
 #endif /* MAIN_H */
