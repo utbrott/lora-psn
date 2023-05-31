@@ -23,7 +23,7 @@
 /**
  * @brief Formatted data from sensor, ready for sending
  */
-extern sensor::BufferData_t sensorBuffer;
+extern sensor::BufferData sensorBuffer;
 
 /**
  * @brief Data received from the LoRa message

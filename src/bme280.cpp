@@ -38,7 +38,7 @@ namespace sensor
         humidityAvg.addValue(bme.readHumidity());
     }
 
-    void updateBuffer(BufferData_t *buffer)
+    void updateBuffer(BufferData *buffer)
     {
         buffer->temperature = (u16)(temperatureAvg.getAverage() * 100.0f);
         buffer->pressure = (u16)(pressureAvg.getAverage() / 100.0f);

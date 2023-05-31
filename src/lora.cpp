@@ -43,7 +43,7 @@ namespace lora
     }
 
     // Only for SLAVE modules
-    void sendResponse(sensor::BufferData_t *buffer, u8 reqMsg)
+    void sendResponse(sensor::BufferData *buffer, u8 reqMsg)
     {
         /**
          * @brief Payload of the response. First byte is request code echo,
@@ -76,7 +76,7 @@ namespace lora
     }
 
     // Only for MASTER module
-    void readResponse(ReceivedData_t *data, u8 message[])
+    void readResponse(ReceivedData *data, u8 message[])
     {
         u8 boardId = BOARDID_MASK(message[0]) - 1;
         // Merge each 2x 8-bit fields into 1x 16-bit one, fix magnitudes

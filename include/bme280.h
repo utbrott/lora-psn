@@ -20,25 +20,9 @@
 namespace sensor
 {
     /**
-     * @brief Raw data read from BME280 breakout board.
-     * Everything in floating point.
-     */
-    typedef struct
-    {
-        f32 temperature;
-        f32 pressure;
-        f32 humidity;
-    } RawData_t;
-
-    /**
      * @brief Format of data in buffer, ready to be sent with LoRa protocol.
      */
-    typedef struct
-    {
-        u16 temperature;
-        u16 pressure;
-        u16 humidity;
-    } BufferData_t;
+    typedef SensorValues<u16> BufferData;
 
     /**
      * @brief Initialize BME280 sensor over I2C
@@ -54,7 +38,7 @@ namespace sensor
      * @brief Updates data buffer with rolling average values
      * @param buffer Data buffer to update (reference)
      */
-    void updateBuffer(BufferData_t *buffer);
+    void updateBuffer(BufferData *buffer);
 }
 
 #endif /* BME280_SENSOR_H */

@@ -26,12 +26,7 @@ namespace lora
     /**
      * @brief   Structure of data received through LoRa communication
      */
-    typedef struct
-    {
-        f32 temperature[3];
-        f32 pressure[3];
-        f32 humidity[3];
-    } ReceivedData_t;
+    typedef SensorData<f32, 3> ReceivedData;
 
     enum dataId : const char
     {
@@ -59,13 +54,13 @@ namespace lora
      * @param   *data: data from the sensor, if connected
      * otherwise defaults to empty array
      */
-    void sendResponse(sensor::BufferData_t *buffer, u8 reqCode);
+    void sendResponse(sensor::BufferData *buffer, u8 reqCode);
 
     /**
      * @brief   Read response from LoRa connection
      * @param   message: Message received through LoRa
      */
-    void readResponse(ReceivedData_t *receivedData, u8 message[]);
+    void readResponse(ReceivedData *data, u8 message[]);
 }
 
 #endif /* LORA_H */

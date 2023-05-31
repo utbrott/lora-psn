@@ -18,7 +18,7 @@
 #define PERIOD_MS 5000 // (milliseconds) between new measurements
 #endif
 
-sensor::BufferData_t sensorBuffer = {0, 0, 0};
+sensor::BufferData sensorBuffer = {0, 0, 0};
 
 lora::ReceivedData receivedData = {{0.0, 0.0, 0.0}, {0.0, 0.0, 0.0}, {0.0, 0.0, 0.0}};
 u8 updateRequestMsg[1]; // SLAVE only
