@@ -222,7 +222,7 @@ void logReceivedData(void)
     f32 failedPercent[SLAVE_COUNT];
     for (int i = 0; i < SLAVE_COUNT; ++i)
     {
-        failedPercent[i] = (f32)((failedRequests[i] / totalRequests[i]));
+        failedPercent[i] = ((f32)failedRequests[i] / (f32)totalRequests[i]) * 100.0f;
         Serial.print(String(failedPercent[i]));
         Serial.print("\t");
     }
