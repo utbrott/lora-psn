@@ -104,4 +104,7 @@ extern void webserverTransmit(lora::ReceivedData *data);
  */
 extern void logReceivedData(lora::ReceivedData *data);
 
+template <typename T, size_t size>
+extern void logValues(const T (&array)[size]);
+
 #endif /* MAIN_H */

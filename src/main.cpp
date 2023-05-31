@@ -25,6 +25,7 @@ u8 updateRequestMsg[1]; // SLAVE only
 u8 receivedMsg[64];     // MASTER only
 u8 totalRequests[SLAVE_COUNT] = {0, 0, 0};
 u8 failedRequests[SLAVE_COUNT] = {0, 0, 0};
+f32 failedPercent[SLAVE_COUNT] = {0.0, 0.0, 0.0};
 
 u8 requestCode[sizeof(slaveId) * sizeof(dataId)];
 
@@ -177,61 +178,48 @@ void fetchDataUpdate(u8 requestCode)
     delay(100); // 100ms blocking delay between requests
 }
 
+template <typename T, size_t size>
+extern void logValues(const T (&array)[size])
+{
+    for (T item : array)
+    {
+        Serial.print(item);
+        Serial.print("\t");
+    }
+    Serial.println();
+}
+
 void logReceivedData(lora::ReceivedData *data)
 {
     Serial.println();
     debug::println(debug::INFO, "Fetched data:");
 
     Serial.print("Temperature:\t");
-    for (size_t i = 0; i < ARRAYSIZE(data->temperature); ++i)
-    {
-        Serial.print(data->temperature[i]);
-        Serial.print("\t");
-    }
-    Serial.println();
+    logValues(data->temperature);
 
     Serial.print("Pressure:\t");
-    for (size_t i = 0; i < ARRAYSIZE(data->pressure); ++i)
-    {
-        Serial.print(data->pressure[i]);
-        Serial.print("\t");
-    }
-    Serial.println();
+    logValues(data->pressure);
 
     Serial.print("Humidity:\t");
-    for (size_t i = 0; i < ARRAYSIZE(data->humidity); ++i)
-    {
-        Serial.print(data->humidity[i]);
-        Serial.print("\t");
-    }
-    Serial.println();
+    logValues(data->humidity);
 
     Serial.println();
     debug::println(debug::INFO, "Requests statistics:");
 
     Serial.print("Total:\t\t");
-    for (size_t i = 0; i < ARRAYSIZE(totalRequests); ++i)
-    {
-        Serial.print(totalRequests[i]);
-        Serial.print("\t");
-    }
-    Serial.println();
+    logValues(totalRequests);
 
     Serial.print("Failed:\t\t");
-    for (size_t i = 0; i < ARRAYSIZE(failedRequests); ++i)
-    {
-        Serial.print(failedRequests[i]);
-        Serial.print("\t");
-    }
-    Serial.println();
+    logValues(failedRequests);
 
-    Serial.print("Failed%:\t");
     for (size_t i = 0; i < ARRAYSIZE(totalRequests); ++i)
     {
-        f32 failedPercent = ((f32)failedRequests[i] / (f32)totalRequests[i]) * 100.0f;
-        Serial.print(failedPercent);
-        Serial.print("\t");
+        failedPercent[i] = ((f32)failedRequests[i] / (f32)totalRequests[i]) * 100.0f;
     }
+
+    Serial.print("Failed%:\t");
+    logValues(failedPercent);
+
     Serial.println();
     Serial.println();
 }
