@@ -138,12 +138,6 @@ void masterNewFetch_handler(void)
         fetchDataUpdate(requestCode[itr]);
     }
 
-    // Calculate percent of failed requests
-    // for (size_t i; i < ARRAYSIZE(failedPercent); ++i)
-    // {
-    //     failedPercent[i] = ((f32)failedRequests[i] / (f32)totalRequests[i]) * 100.0f;
-    // }
-
     logReceivedData(&receivedData);
     webserverTransmit(&receivedData);
 }
@@ -244,6 +238,14 @@ void webserverTransmit(lora::ReceivedData *data)
     transmitPacket(data->temperature, 100.0f);
     transmitPacket(data->pressure);
     transmitPacket(data->humidity, 100.0f);
+    // *Webserver cannot decode those yet (MASTER needs a flash)
+    transmitPacket(totalRequests);
+    transmitPacket(failedRequests);
+    for (size_t i = 0; i < ARRAYSIZE(totalRequests); ++i)
+    {
+        failedPercent[i] = ((f32)failedRequests[i] / (f32)totalRequests[i]) * 100.0f;
+    }
+    transmitPacket(failedPercent, 100.0f);
 
     Wire.endTransmission();
 }
