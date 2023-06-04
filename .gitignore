@@ -8,3 +8,5 @@ include/README
 justfile
 images/*.xml.bkp
 images/*.xml.dtmp
+images/*.drawio.bkp
+images/*.drawio.dtmp
