@@ -92,11 +92,19 @@ extern void fetchSubroutineHandler(void);
  */
 extern void fetchData(u8 requestCode);
 
+template <typename T, size_t size>
+extern void logValues(const T (&array)[size]);
+
 /**
- * @brief Transmits data from buffer over I2C to Webserver module
- * @param data pointer to data received by MASTER
+ * @brief Data type key enumeration
  */
-extern void webserverTransmit(lora::ReceivedData *data);
+enum DataType
+{
+    TEMPERATURE,
+    PRESSURE,
+    HUMIDITY,
+    FAILPERCENT,
+};
 
 /**
  * @brief Logs data from buffer
@@ -104,12 +112,15 @@ extern void webserverTransmit(lora::ReceivedData *data);
  */
 extern void logReceivedData(lora::ReceivedData *data);
 
+template <typename T, size_t size>
+extern void transmitPacket(const T (&array)[size], u8 type, f32 modifier = 1.0f);
+
+/**
+ * @brief Transmits data from buffer over I2C to Webserver module
+ * @param data pointer to data received by MASTER
+ */
+extern void webserverTransmit(lora::ReceivedData *data);
+
 extern void getFailedPercent(u8 (&totalReq)[3], u8 (&failReq)[3], f32 (&failPercent)[3]);
-
-template <typename T, size_t size>
-extern void logValues(const T (&array)[size]);
-
-template <typename T, size_t size>
-extern void transmitPacket(const T (&array)[size], f32 modifier = 1.0f);
 
 #endif /* MAIN_H */

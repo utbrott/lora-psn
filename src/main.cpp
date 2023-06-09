@@ -215,34 +215,33 @@ void logReceivedData(lora::ReceivedData *data)
     logValues(failedPercent);
 
     Serial.println();
-    Serial.println();
 }
 
 template <typename T, size_t size>
-void transmitPacket(const T (&array)[size], f32 modifier)
+void transmitPacket(const T (&array)[size], u8 typeKey, f32 modifier)
 {
     char packet[50];
     for (T item : array)
     {
-        sprintf(packet, "%i\t", (u16)(item * modifier));
+        sprintf(packet, "%i:%i&", typeKey, (u16)(item * modifier));
         Wire.write(packet);
     }
-    Wire.write("\n");
 }
 
 void webserverTransmit(lora::ReceivedData *data)
 {
-    debug::println(debug::INFO, "Sending to webserver\n");
+    debug::println(debug::INFO, "Sending to webserver");
     Wire.beginTransmission(I2C_ADDR);
 
-    transmitPacket(data->temperature, 100.0f);
-    transmitPacket(data->pressure);
-    transmitPacket(data->humidity, 100.0f);
-    //! Webserver cannot decode those yet (MASTER needs a flash)
-    transmitPacket(totalRequests);
-    transmitPacket(failedRequests);
+    transmitPacket(data->temperature, TEMPERATURE, 100.0f);
+    Serial.println("Temperature");
+    transmitPacket(data->pressure, PRESSURE);
+    Serial.println("Pressure");
+    transmitPacket(data->humidity, HUMIDITY, 100.0f);
+    Serial.println("Humidity");
     getFailedPercent(totalRequests, failedRequests, failedPercent);
-    transmitPacket(failedPercent, 100.0f);
+    transmitPacket(failedPercent, FAILPERCENT, 100.0f);
+    Serial.println("Failed%");
 
     Wire.endTransmission();
 }
@@ -251,6 +250,6 @@ void getFailedPercent(u8 (&totalReq)[3], u8 (&failReq)[3], f32 (&failPercent)[3]
 {
     for (u8 i = 0; i < sizeof(totalReq); ++i)
     {
-        failedPercent[i] = ((f32)totalReq[i] / (f32)failReq[i]) * 100.0f;
+        failedPercent[i] = ((f32)failReq[i] / (f32)totalReq[i]) * 100.0f;
     }
 }
