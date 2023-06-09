@@ -48,7 +48,7 @@ void setup()
         pinMode(LED_BUILTIN, OUTPUT);
         digitalWrite(LED_BUILTIN, 0);
         attachInterrupt(digitalPinToInterrupt(SLAVE_INTERRUPT_PIN),
-                        updateRequest_handler, RISING);
+                        newRequestHandler, RISING);
 
         break;
     }
@@ -56,11 +56,11 @@ void setup()
     case lora::MASTER:
     {
         u8 codeItr = 0;
-        for (u8 i = 0; i < sizeof(dataId); ++i)
+        for (u8 _dId : dataId)
         {
-            for (u8 j = 0; j < sizeof(slaveId); ++j)
+            for (u8 _sId : slaveId)
             {
-                requestCode[codeItr] = slaveId[j] + dataId[i];
+                requestCode[codeItr] = _dId + _sId;
                 ++codeItr;
             }
         }
@@ -69,9 +69,9 @@ void setup()
         Wire.setSCL(I2C1_SCL);
         Wire.begin();
         attachInterrupt(digitalPinToInterrupt(BOARD_BTN),
-                        buttonPress_handler, RISING);
+                        buttonPressHandler, RISING);
 
-        masterNewFetch_handler();
+        fetchSubroutineHandler();
         break;
     }
     }
@@ -101,8 +101,7 @@ void loop()
         if (next)
         {
             timer = millis();
-            masterNewFetch_handler();
-
+            fetchSubroutineHandler();
             INVERT(next);
         }
         break;
@@ -114,12 +113,12 @@ void loop()
     }
 }
 
-void buttonPress_handler(void)
+void buttonPressHandler(void)
 {
-    masterNewFetch_handler();
+    fetchSubroutineHandler();
 }
 
-void updateRequest_handler(void)
+void newRequestHandler(void)
 {
     if (BOARDID_MASK(updateRequestMsg[0]) != BOARD_ID)
     {
@@ -131,18 +130,18 @@ void updateRequest_handler(void)
     digitalWrite(LED_BUILTIN, 0); // Turn off the LED when done, visual indicator
 }
 
-void masterNewFetch_handler(void)
+void fetchSubroutineHandler(void)
 {
-    for (u8 itr = 0; itr < sizeof(requestCode); ++itr)
+    for (u8 code : requestCode)
     {
-        fetchDataUpdate(requestCode[itr]);
+        fetchData(code);
     }
 
     logReceivedData(&receivedData);
     webserverTransmit(&receivedData);
 }
 
-void fetchDataUpdate(u8 requestCode)
+void fetchData(u8 requestCode)
 {
     lora::sendRequest(requestCode);
     totalRequests[(BOARDID_MASK(requestCode)) - 1] += 1;
@@ -210,6 +209,7 @@ void logReceivedData(lora::ReceivedData *data)
     {
         failedPercent[i] = ((f32)failedRequests[i] / (f32)totalRequests[i]) * 100.0f;
     }
+    getFailedPercent(totalRequests, failedRequests, failedPercent);
 
     Serial.print("Failed%:\t");
     logValues(failedPercent);
@@ -238,14 +238,19 @@ void webserverTransmit(lora::ReceivedData *data)
     transmitPacket(data->temperature, 100.0f);
     transmitPacket(data->pressure);
     transmitPacket(data->humidity, 100.0f);
-    // *Webserver cannot decode those yet (MASTER needs a flash)
+    //! Webserver cannot decode those yet (MASTER needs a flash)
     transmitPacket(totalRequests);
     transmitPacket(failedRequests);
-    for (size_t i = 0; i < ARRAYSIZE(totalRequests); ++i)
-    {
-        failedPercent[i] = ((f32)failedRequests[i] / (f32)totalRequests[i]) * 100.0f;
-    }
+    getFailedPercent(totalRequests, failedRequests, failedPercent);
     transmitPacket(failedPercent, 100.0f);
 
     Wire.endTransmission();
+}
+
+void getFailedPercent(u8 (&totalReq)[3], u8 (&failReq)[3], f32 (&failPercent)[3])
+{
+    for (u8 i = 0; i < sizeof(totalReq); ++i)
+    {
+        failedPercent[i] = ((f32)totalReq[i] / (f32)failReq[i]) * 100.0f;
+    }
 }

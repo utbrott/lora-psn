@@ -73,24 +73,24 @@ extern u8 next;
  * @brief Button press interrupt handler
  * @note MASTER boards only
  */
-extern void buttonPress_handler(void);
+extern void buttonPressHandler(void);
 
 /**
  * @brief New data request interrupt handler
  * @note SLAVE boards only
  */
-extern void updateRequest_handler(void);
+extern void newRequestHandler(void);
 
 /**
- * @brief Handler for making new fetch with timer or button press interrupt
+ * @brief Function for handling data fetch subroutine
  */
-extern void masterNewFetch_handler(void);
+extern void fetchSubroutineHandler(void);
 
 /**
- * @brief Performs data update routine with specifed request code
+ * @brief Sends a data request with specifed code
  * @param requestCode Request code built from SLAVE Id and DATA Id
  */
-extern void fetchDataUpdate(u8 requestCode);
+extern void fetchData(u8 requestCode);
 
 /**
  * @brief Transmits data from buffer over I2C to Webserver module
@@ -103,6 +103,8 @@ extern void webserverTransmit(lora::ReceivedData *data);
  * @param data pointer to data received by MASTER
  */
 extern void logReceivedData(lora::ReceivedData *data);
+
+extern void getFailedPercent(u8 (&totalReq)[3], u8 (&failReq)[3], f32 (&failPercent)[3]);
 
 template <typename T, size_t size>
 extern void logValues(const T (&array)[size]);

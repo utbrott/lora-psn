@@ -6,19 +6,19 @@
 class RollingAvg
 {
 public:
-    RollingAvg(u8);
+    RollingAvg(u8 nSample);
     ~RollingAvg();
 
     void clear(void);
-    void addValue(f32);
+    void addValue(f32 value);
     f32 getAverage(void);
 
 private:
     u8 _size;
-    u8 _cnt;
+    u8 _count;
     u8 _idx;
     float _sum;
-    float *_ar;
+    float *_array;
 };
 
 #endif /* ROLLINGAVG_H */

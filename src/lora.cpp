@@ -94,6 +94,5 @@ namespace lora
             data->humidity[boardId] = (f32)((message[1] << 8) + message[2]) / 100;
             break;
         }
-        // memset(message, 0, 3); // TODO: Actually needed?
     }
 }

@@ -1,18 +1,18 @@
 #include "rollingavg.h"
 
-RollingAvg::RollingAvg(u8 n)
+RollingAvg::RollingAvg(u8 nSample)
 {
-    _size = n;
-    _ar = (float *)malloc(_size * sizeof(f32));
-    if (_ar == NULL)
+    _size = nSample;
+    _array = (float *)malloc(_size * sizeof(f32));
+    if (_array == NULL)
         _size = 0;
     clear();
 }
 
 RollingAvg::~RollingAvg()
 {
-    if (_ar != NULL)
-        free(_ar);
+    if (_array != NULL)
+        free(_array);
 }
 
 /**
@@ -20,13 +20,13 @@ RollingAvg::~RollingAvg()
  */
 void RollingAvg::clear()
 {
-    _cnt = 0;
+    _count = 0;
     _idx = 0;
     _sum = 0;
 
     // Prealloc with only zeros
     for (u8 i = 0; i < _size; ++i)
-        _ar[i] = 0.0;
+        _array[i] = 0.0;
 }
 
 /**
@@ -35,20 +35,20 @@ void RollingAvg::clear()
  */
 void RollingAvg::addValue(f32 value)
 {
-    if (_ar == NULL)
+    if (_array == NULL)
         return;
 
-    _sum -= _ar[_idx];
-    _ar[_idx] = value;
-    _sum += _ar[_idx];
+    _sum -= _array[_idx];
+    _array[_idx] = value;
+    _sum += _array[_idx];
     ++_idx;
 
     // Check if array is filled
     if (_idx == _size)
         _idx = 0;
 
-    if (_cnt < _size)
-        ++_cnt;
+    if (_count < _size)
+        ++_count;
 }
 
 /**
@@ -57,8 +57,8 @@ void RollingAvg::addValue(f32 value)
  */
 float RollingAvg::getAverage()
 {
-    if (_cnt == 0)
+    if (_count == 0)
         return NAN;
 
-    return (_sum / _cnt);
+    return (_sum / _count);
 }
