@@ -20,7 +20,10 @@
 
 sensor::BufferData sensorBuffer = {0, 0, 0};
 
-lora::ReceivedData receivedData = {{0.0, 0.0, 0.0}, {0.0, 0.0, 0.0}, {0.0, 0.0, 0.0}};
+lora::ReceivedData receivedData = {
+    {0.0, 0.0, 0.0},
+    {0.0, 0.0, 0.0},
+    {0.0, 0.0, 0.0}};
 u8 updateRequestMsg[1]; // SLAVE only
 u8 receivedMsg[64];     // MASTER only
 u8 totalRequests[SLAVE_COUNT] = {0, 0, 0};
@@ -68,8 +71,8 @@ void setup()
         Wire.setSDA(I2C1_SDA);
         Wire.setSCL(I2C1_SCL);
         Wire.begin();
-        attachInterrupt(digitalPinToInterrupt(BOARD_BTN),
-                        buttonPressHandler, RISING);
+        attachInterrupt(digitalPinToInterrupt(BOARD_BTN), buttonPressHandler,
+                        RISING);
 
         fetchSubroutineHandler();
         break;
@@ -113,10 +116,7 @@ void loop()
     }
 }
 
-void buttonPressHandler(void)
-{
-    fetchSubroutineHandler();
-}
+void buttonPressHandler(void) { fetchSubroutineHandler(); }
 
 void newRequestHandler(void)
 {
@@ -153,7 +153,8 @@ void fetchData(u8 requestCode)
         if ((millis() - timeout) >= TIMEOUT_MS)
         {
             timeout = millis();
-            debug::println(debug::ERR, "Request 0x" + String(requestCode, HEX) + " failed: TIME OUT.");
+            debug::println(debug::ERR, "Request 0x" + String(requestCode, HEX) +
+                                           " failed: TIME OUT.");
             failedRequests[(BOARDID_MASK(requestCode)) - 1] += 1;
             return;
         }
@@ -162,7 +163,8 @@ void fetchData(u8 requestCode)
     // No timeout, check response code matches request code
     if (receivedMsg[0] != requestCode)
     {
-        debug::println(debug::ERR, "Request 0x" + String(requestCode, HEX) + " failed: BAD RESPONSE");
+        debug::println(debug::ERR, "Request 0x" + String(requestCode, HEX) +
+                                       " failed: BAD RESPONSE");
         failedRequests[(BOARDID_MASK(requestCode)) - 1] += 1;
         return;
     }
@@ -189,28 +191,19 @@ void logReceivedData(lora::ReceivedData *data)
 
     Serial.print("Temperature:\t");
     logValues(data->temperature);
-
     Serial.print("Pressure:\t");
     logValues(data->pressure);
-
     Serial.print("Humidity:\t");
     logValues(data->humidity);
-
     Serial.println();
+
     debug::println(debug::INFO, "Requests statistics:");
 
     Serial.print("Total:\t\t");
     logValues(totalRequests);
-
     Serial.print("Failed:\t\t");
     logValues(failedRequests);
-
-    for (size_t i = 0; i < ARRAYSIZE(totalRequests); ++i)
-    {
-        failedPercent[i] = ((f32)failedRequests[i] / (f32)totalRequests[i]) * 100.0f;
-    }
     getFailedPercent(totalRequests, failedRequests, failedPercent);
-
     Serial.print("Failed%:\t");
     logValues(failedPercent);
 
@@ -246,7 +239,8 @@ void webserverTransmit(lora::ReceivedData *data)
     Wire.endTransmission();
 }
 
-void getFailedPercent(u8 (&totalReq)[3], u8 (&failReq)[3], f32 (&failPercent)[3])
+void getFailedPercent(u8 (&totalReq)[3], u8 (&failReq)[3],
+                      f32 (&failPercent)[3])
 {
     for (u8 i = 0; i < sizeof(totalReq); ++i)
     {
