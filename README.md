@@ -22,20 +22,27 @@ Developed for Master's Thesis @ WUT Warsaw University of Technology.
 ```
 .
 ├── include
-│   ├── bme280.h    (interfacing with Adafruit BME280 breakout board)
-│   ├── debug.h     (helper function for debugging through Serial)
-│   ├── globals.h   (project-wide typedefs)
-│   ├── lora.h      (interfacting with USI STM32 LoRa shield)
-│   └── main.h
+│   ├── bme280.h
+│   ├── debug.h
+│   ├── globals.h
+│   ├── lora.h
+│   ├── main.h
+│   └── rollingavg.h
 ├── src
 │   ├── bme280.cpp
 │   ├── debug.cpp
 │   ├── lora.cpp
-│   └── main.cpp
+│   ├── main.cpp
+│   └── rollingavg.cpp
 ├── platformio.ini
-└── README.md --> this file
+└── README.md   --> This file
 ```
+
+- `bme280.h` - interfacing with Adafruit BME280 sensor breakout board,
+- `debug.h` - helper functions for debugging through Serial,
+- `globals.h` - project-wide definitions, typedefs, functions,
+- `lora.h` - interfacing with USI STM32 LoRa expansion shield,
 
 ## Future development note
 
-Project was built using PlatformIO extension for VSCode.
+Project was built using PlatformIO Core CLI and PlatformIO IDE for VSCode.
