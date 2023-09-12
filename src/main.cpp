@@ -8,7 +8,7 @@
 #define BOARD_ID 0x00
 #endif
 #ifndef SPREADFACTOR
-#define SPREADFACTOR 7
+#define SPREADFACTOR 12
 #endif
 
 // Set PERIOD_MS based on BOARD_ID
@@ -93,10 +93,12 @@ void loop()
 
         if (next)
         {
+            debug::println(debug::INFO, "Measuring");
             sensor::readRaw();
             sensor::updateBuffer(&sensorBuffer);
             timer = millis();
             INVERT(next);
+            debug::println(debug::INFO, "Measure done");
         }
         break;
 
